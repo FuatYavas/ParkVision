@@ -1,0 +1,147 @@
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
+import MapScreen from './screens/MapScreen';
+import ReservationScreen from './screens/ReservationScreen';
+import MyReservationsScreen from './screens/MyReservationsScreen';
+import FindMyCarScreen from './screens/FindMyCarScreen';
+import ParkingDetailScreen from './screens/ParkingDetailScreen';
+import NavigationScreen from './screens/NavigationScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import PersonalInfoScreen from './screens/PersonalInfoScreen';
+import VehiclesScreen from './screens/VehiclesScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
+import PlaceholderScreen from './screens/PlaceholderScreen';
+
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === 'Map') {
+            iconName = focused ? 'map' : 'map-outline';
+          } else if (route.name === 'Reservations') {
+            iconName = focused ? 'calendar' : 'calendar-outline';
+          } else if (route.name === 'FindMyCar') {
+            iconName = focused ? 'car' : 'car-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#4CAF50',
+        tabBarInactiveTintColor: 'gray',
+      })}
+    >
+      <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false, tabBarLabel: 'Harita' }} />
+      <Tab.Screen
+        name="Reservations"
+        component={MyReservationsScreen}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Rezervasyonlarım'
+        }}
+      />
+      <Tab.Screen
+        name="FindMyCar"
+        component={FindMyCarScreen}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Find My Car'
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
+          )
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Onboarding">
+        <Stack.Screen
+          name="Onboarding"
+          component={OnboardingScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Main"
+          component={MainTabs}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Reservation"
+          component={ReservationScreen}
+          options={{
+            title: 'Park Yeri Seçimi',
+            presentation: 'modal'
+          }}
+        />
+        <Stack.Screen
+          name="ParkingDetail"
+          component={ParkingDetailScreen}
+          options={{
+            title: 'Otopark Detayı',
+            presentation: 'modal'
+          }}
+        />
+        <Stack.Screen
+          name="Navigation"
+          component={NavigationScreen}
+          options={{
+            headerShown: false,
+            presentation: 'modal'
+          }}
+        />
+        <Stack.Screen
+          name="PersonalInfo"
+          component={PersonalInfoScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Vehicles"
+          component={VehiclesScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="MyReservations"
+          component={MyReservationsScreen}
+          options={{ title: 'Reservation History' }}
+        />
+        <Stack.Screen name="Payment" component={PlaceholderScreen} initialParams={{ title: 'Payment Methods' }} />
+        <Stack.Screen name="Favorites" component={PlaceholderScreen} initialParams={{ title: 'Favorite Spots' }} />
+        <Stack.Screen name="Notifications" component={PlaceholderScreen} initialParams={{ title: 'Notifications' }} />
+        <Stack.Screen name="Appearance" component={PlaceholderScreen} initialParams={{ title: 'Appearance' }} />
+        <Stack.Screen name="Language" component={PlaceholderScreen} initialParams={{ title: 'Language' }} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
