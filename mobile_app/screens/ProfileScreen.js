@@ -40,26 +40,26 @@ export default function ProfileScreen({ navigation }) {
 
     const menuItems = [
         {
-            title: 'ACCOUNT',
+            title: 'HESAP',
             items: [
-                { icon: 'person-outline', label: 'Personal Information', route: 'PersonalInfo', active: true },
-                { icon: 'car-outline', label: 'My Vehicles', route: 'Vehicles', active: true },
-                { icon: 'card-outline', label: 'Payment Methods', route: 'Payment', active: false },
+                { icon: 'person-outline', label: 'Kişisel Bilgiler', route: 'PersonalInfo', active: true },
+                { icon: 'car-outline', label: 'Araçlarım', route: 'Vehicles', active: true },
+                { icon: 'card-outline', label: 'Ödeme Yöntemleri', route: 'Payment', active: false },
             ]
         },
         {
-            title: 'ACTIVITY',
+            title: 'AKTİVİTE',
             items: [
-                { icon: 'time-outline', label: 'Reservation History', route: 'MyReservations', active: true },
-                { icon: 'heart-outline', label: 'Favorite Spots', route: 'Favorites', active: false },
+                { icon: 'time-outline', label: 'Rezervasyon Geçmişi', route: 'MyReservations', active: true },
+                { icon: 'heart-outline', label: 'Favori Otoparklar', route: 'Favorites', active: false },
             ]
         },
         {
-            title: 'SETTINGS',
+            title: 'AYARLAR',
             items: [
-                { icon: 'notifications-outline', label: 'Notifications', route: 'Notifications', active: false },
-                { icon: 'moon-outline', label: 'Appearance', value: 'System', route: 'Appearance', active: false },
-                { icon: 'globe-outline', label: 'Language', value: 'English', route: 'Language', active: false },
+                { icon: 'notifications-outline', label: 'Bildirimler', route: 'Notifications', active: false },
+                { icon: 'moon-outline', label: 'Görünüm', value: 'Sistem', route: 'Appearance', active: false },
+                { icon: 'globe-outline', label: 'Dil', value: 'Türkçe', route: 'Language', active: false },
             ]
         }
     ];
@@ -68,18 +68,18 @@ export default function ProfileScreen({ navigation }) {
         if (item.active) {
             navigation.navigate(item.route);
         } else {
-            Alert.alert('Coming Soon', `${item.label} feature is not yet available.`);
+            Alert.alert('Yakında', `${item.label} özelliği henüz kullanıma açılmadı.`);
         }
     };
 
     const handleLogout = () => {
         Alert.alert(
-            'Logout',
-            'Are you sure you want to logout?',
+            'Çıkış Yap',
+            'Çıkış yapmak istediğinizden emin misiniz?',
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: 'İptal', style: 'cancel' },
                 {
-                    text: 'Logout',
+                    text: 'Çıkış Yap',
                     style: 'destructive',
                     onPress: async () => {
                         try {
@@ -97,9 +97,9 @@ export default function ProfileScreen({ navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Profile</Text>
+                <Text style={styles.headerTitle}>Profil</Text>
                 <TouchableOpacity onPress={() => navigation.navigate('PersonalInfo')}>
-                    <Text style={styles.editButton}>Edit</Text>
+                    <Text style={styles.editButton}>Düzenle</Text>
                 </TouchableOpacity>
             </View>
 
@@ -152,7 +152,7 @@ export default function ProfileScreen({ navigation }) {
                 ))}
 
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                    <Text style={styles.logoutButtonText}>Log Out</Text>
+                    <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>

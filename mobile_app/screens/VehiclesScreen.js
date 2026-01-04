@@ -20,7 +20,7 @@ const VEHICLE_TYPES = [
     { value: 'suv', label: 'SUV' },
     { value: 'hatchback', label: 'Hatchback' },
     { value: 'minivan', label: 'Minivan' },
-    { value: 'motorcycle', label: 'Motorcycle' }
+    { value: 'motorcycle', label: 'Motosiklet' }
 ];
 
 export default function VehiclesScreen({ navigation }) {
@@ -47,7 +47,7 @@ export default function VehiclesScreen({ navigation }) {
             setVehicles(data);
         } catch (error) {
             console.error('Failed to fetch vehicles:', error);
-            Alert.alert('Error', 'Failed to load vehicles');
+            Alert.alert('Hata', 'Araçlar yüklenemedi');
         } finally {
             setLoading(false);
         }
@@ -75,7 +75,7 @@ export default function VehiclesScreen({ navigation }) {
 
     const handleSaveVehicle = async () => {
         if (!plateNumber.trim() || !brand.trim() || !model.trim() || !color.trim()) {
-            Alert.alert('Error', 'Please fill in all fields');
+            Alert.alert('Hata', 'Lütfen tüm alanları doldurun');
             return;
         }
 
@@ -90,37 +90,37 @@ export default function VehiclesScreen({ navigation }) {
 
             if (editingVehicle) {
                 await updateVehicle(editingVehicle.id, vehicleData);
-                Alert.alert('Success', 'Vehicle updated successfully');
+                Alert.alert('Başarılı', 'Araç başarıyla güncellendi');
             } else {
                 await createVehicle(vehicleData);
-                Alert.alert('Success', 'Vehicle added successfully');
+                Alert.alert('Başarılı', 'Araç başarıyla eklendi');
             }
 
             setModalVisible(false);
             fetchVehicles();
         } catch (error) {
             console.error('Failed to save vehicle:', error);
-            Alert.alert('Error', error.response?.data?.detail || 'Failed to save vehicle');
+            Alert.alert('Hata', error.response?.data?.detail || 'Araç kaydedilemedi');
         }
     };
 
     const handleDeleteVehicle = (vehicle) => {
         Alert.alert(
-            'Delete Vehicle',
-            `Are you sure you want to delete ${vehicle.brand} ${vehicle.model}?`,
+            'Aracı Sil',
+            `${vehicle.brand} ${vehicle.model} aracını silmek istediğinizden emin misiniz?`,
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: 'İptal', style: 'cancel' },
                 {
-                    text: 'Delete',
+                    text: 'Sil',
                     style: 'destructive',
                     onPress: async () => {
                         try {
                             await deleteVehicle(vehicle.id);
-                            Alert.alert('Success', 'Vehicle deleted successfully');
+                            Alert.alert('Başarılı', 'Araç başarıyla silindi');
                             fetchVehicles();
                         } catch (error) {
                             console.error('Failed to delete vehicle:', error);
-                            Alert.alert('Error', 'Failed to delete vehicle');
+                            Alert.alert('Hata', 'Araç silinemedi');
                         }
                     }
                 }
@@ -163,7 +163,7 @@ export default function VehiclesScreen({ navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>My Vehicles</Text>
+                <Text style={styles.headerTitle}>Araçlarım</Text>
                 <TouchableOpacity onPress={openAddModal}>
                     <Ionicons name="add-circle" size={28} color="#0066FF" />
                 </TouchableOpacity>
@@ -176,9 +176,9 @@ export default function VehiclesScreen({ navigation }) {
             ) : vehicles.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Ionicons name="car-outline" size={64} color="#ccc" />
-                    <Text style={styles.emptyText}>No vehicles added yet</Text>
+                    <Text style={styles.emptyText}>Henüz araç eklenmedi</Text>
                     <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-                        <Text style={styles.addButtonText}>Add Your First Vehicle</Text>
+                        <Text style={styles.addButtonText}>İlk Aracınızı Ekleyin</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
@@ -200,7 +200,7 @@ export default function VehiclesScreen({ navigation }) {
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>
-                                {editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'}
+                                {editingVehicle ? 'Aracı Düzenle' : 'Araç Ekle'}
                             </Text>
                             <TouchableOpacity onPress={() => setModalVisible(false)}>
                                 <Ionicons name="close" size={24} color="#000" />
@@ -209,24 +209,24 @@ export default function VehiclesScreen({ navigation }) {
 
                         <ScrollView>
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Plate Number</Text>
+                                <Text style={styles.label}>Plaka</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={plateNumber}
                                     onChangeText={setPlateNumber}
-                                    placeholder="e.g., 34 ABC 123"
+                                    placeholder="örn: 34 ABC 123"
                                     placeholderTextColor="#999"
                                     autoCapitalize="characters"
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Brand</Text>
+                                <Text style={styles.label}>Marka</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={brand}
                                     onChangeText={setBrand}
-                                    placeholder="e.g., Toyota"
+                                    placeholder="örn: Toyota"
                                     placeholderTextColor="#999"
                                 />
                             </View>
@@ -237,24 +237,24 @@ export default function VehiclesScreen({ navigation }) {
                                     style={styles.input}
                                     value={model}
                                     onChangeText={setModel}
-                                    placeholder="e.g., Corolla"
+                                    placeholder="örn: Corolla"
                                     placeholderTextColor="#999"
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Color</Text>
+                                <Text style={styles.label}>Renk</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={color}
                                     onChangeText={setColor}
-                                    placeholder="e.g., White"
+                                    placeholder="örn: Beyaz"
                                     placeholderTextColor="#999"
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Vehicle Type</Text>
+                                <Text style={styles.label}>Araç Tipi</Text>
                                 <View style={styles.typeButtons}>
                                     {VEHICLE_TYPES.map((type) => (
                                         <TouchableOpacity
@@ -284,7 +284,7 @@ export default function VehiclesScreen({ navigation }) {
                             onPress={handleSaveVehicle}
                         >
                             <Text style={styles.saveButtonText}>
-                                {editingVehicle ? 'Update Vehicle' : 'Add Vehicle'}
+                                {editingVehicle ? 'Aracı Güncelle' : 'Araç Ekle'}
                             </Text>
                         </TouchableOpacity>
                     </View>

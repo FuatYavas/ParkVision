@@ -41,7 +41,7 @@ export default function ParkingDetailScreen({ route, navigation }) {
 
                 <View style={styles.statsRow}>
                     <View style={styles.statCard}>
-                        <Text style={styles.statLabel}>Doluluk Orani</Text>
+                        <Text style={styles.statLabel}>Doluluk Oranı</Text>
                         <Text style={styles.statValue}>{lot.occupancy}%</Text>
                     </View>
                     <View style={styles.statCard}>
@@ -52,7 +52,7 @@ export default function ParkingDetailScreen({ route, navigation }) {
 
                 <View style={styles.priceCard}>
                     <Text style={styles.statLabel}>Saatlik Fiyat</Text>
-                    <Text style={styles.priceValue}>TL{lot.price}</Text>
+                    <Text style={styles.priceValue}>{lot.price}₺</Text>
                 </View>
 
                 <View style={styles.infoCard}>
@@ -60,11 +60,11 @@ export default function ParkingDetailScreen({ route, navigation }) {
                         <View style={styles.infoIconBg}>
                             <Ionicons name="time-outline" size={20} color="#666" />
                         </View>
-                        <Text style={styles.infoLabel}>Acik/Kapali Bilgisi</Text>
+                        <Text style={styles.infoLabel}>Açık/Kapalı Durumu</Text>
                         <View style={styles.statusBadge}>
                             <View style={[styles.statusDot, { backgroundColor: lot.isOpen ? '#4CAF50' : '#F44336' }]} />
                             <Text style={[styles.statusText, { color: lot.isOpen ? '#4CAF50' : '#F44336' }]}>
-                                {lot.isOpen ? 'Acik' : 'Kapali'}
+                                {lot.isOpen ? 'Açık' : 'Kapalı'}
                             </Text>
                         </View>
                     </View>
@@ -75,7 +75,7 @@ export default function ParkingDetailScreen({ route, navigation }) {
                         <View style={styles.infoIconBg}>
                             <Ionicons name="checkmark-circle-outline" size={20} color="#666" />
                         </View>
-                        <Text style={styles.infoLabel}>Rezervasyon Uygunlugu</Text>
+                        <Text style={styles.infoLabel}>Rezervasyon Uygunluğu</Text>
                         <View style={styles.statusBadge}>
                             <View style={[styles.statusDot, { backgroundColor: lot.isReservable ? '#4CAF50' : '#F44336' }]} />
                             <Text style={[styles.statusText, { color: lot.isReservable ? '#4CAF50' : '#F44336' }]}>

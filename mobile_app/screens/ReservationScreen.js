@@ -126,35 +126,35 @@ export default function ReservationScreen({ route, navigation }) {
                 <View style={styles.timerContainer}>
                     <View style={styles.timeBox}>
                         <Text style={styles.timeValue}>{time.h}</Text>
-                        <Text style={styles.timeLabel}>Hours</Text>
+                        <Text style={styles.timeLabel}>Saat</Text>
                     </View>
                     <View style={styles.timeBox}>
                         <Text style={styles.timeValue}>{time.m}</Text>
-                        <Text style={styles.timeLabel}>Minutes</Text>
+                        <Text style={styles.timeLabel}>Dakika</Text>
                     </View>
                     <View style={styles.timeBox}>
                         <Text style={styles.timeValue}>{time.s}</Text>
-                        <Text style={styles.timeLabel}>Seconds</Text>
+                        <Text style={styles.timeLabel}>Saniye</Text>
                     </View>
                 </View>
 
                 <Text style={styles.instructionText}>
-                    You have 30 minutes to select a spot.
+                    Park yeri seçmek için 30 dakikanız var.
                 </Text>
 
                 {/* Legend */}
                 <View style={styles.legendContainer}>
                     <View style={styles.legendItem}>
                         <View style={[styles.legendDot, { backgroundColor: '#4CAF50' }]} />
-                        <Text style={styles.legendText}>Available</Text>
+                        <Text style={styles.legendText}>Boş</Text>
                     </View>
                     <View style={styles.legendItem}>
                         <View style={[styles.legendDot, { backgroundColor: '#0066FF' }]} />
-                        <Text style={styles.legendText}>Selected</Text>
+                        <Text style={styles.legendText}>Seçili</Text>
                     </View>
                     <View style={styles.legendItem}>
                         <View style={[styles.legendDot, { backgroundColor: '#D1D5DB' }]} />
-                        <Text style={styles.legendText}>Occupied</Text>
+                        <Text style={styles.legendText}>Dolu</Text>
                     </View>
                 </View>
 
@@ -183,9 +183,9 @@ export default function ReservationScreen({ route, navigation }) {
                     <View style={styles.qrCircle}>
                         <Ionicons name="qr-code-outline" size={40} color="#0066FF" />
                     </View>
-                    <Text style={styles.qrTitle}>QR Code</Text>
+                    <Text style={styles.qrTitle}>QR Kod</Text>
                     <Text style={styles.qrSubtitle}>
-                        Select a spot to generate your QR code
+                        QR kodunuzu oluşturmak için bir park yeri seçin
                     </Text>
                 </View>
             </ScrollView>
@@ -203,7 +203,7 @@ export default function ReservationScreen({ route, navigation }) {
                             style={styles.cancelButton}
                             onPress={() => navigation.goBack()}
                         >
-                            <Text style={styles.cancelButtonText}>Iptal Et</Text>
+                            <Text style={styles.cancelButtonText}>İptal Et</Text>
                         </TouchableOpacity>
                     </>
                 ) : (
@@ -211,7 +211,7 @@ export default function ReservationScreen({ route, navigation }) {
                         style={styles.cancelButton}
                         onPress={() => navigation.goBack()}
                     >
-                        <Text style={styles.cancelButtonText}>Rezervasyonu Iptal Et</Text>
+                        <Text style={styles.cancelButtonText}>Rezervasyonu İptal Et</Text>
                     </TouchableOpacity>
                 )}
             </View>

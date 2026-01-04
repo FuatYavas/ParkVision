@@ -42,7 +42,7 @@ export default function PersonalInfoScreen({ navigation }) {
             setPhone(userData.phone_number || '');
         } catch (error) {
             console.error('Failed to fetch user data:', error);
-            Alert.alert('Error', 'Failed to load profile information');
+            Alert.alert('Hata', 'Profil bilgileri yüklenemedi');
         } finally {
             setLoading(false);
         }
@@ -50,12 +50,12 @@ export default function PersonalInfoScreen({ navigation }) {
 
     const handleSaveProfile = async () => {
         if (!fullName.trim()) {
-            Alert.alert('Error', 'Full name is required');
+            Alert.alert('Hata', 'Ad soyad gereklidir');
             return;
         }
 
         if (!email.trim()) {
-            Alert.alert('Error', 'Email is required');
+            Alert.alert('Hata', 'E-posta gereklidir');
             return;
         }
 
@@ -66,11 +66,11 @@ export default function PersonalInfoScreen({ navigation }) {
                 email: email.trim(),
                 phone_number: phone.trim() || null
             });
-            Alert.alert('Success', 'Profile updated successfully');
+            Alert.alert('Başarılı', 'Profil başarıyla güncellendi');
             navigation.goBack();
         } catch (error) {
             console.error('Failed to update profile:', error);
-            Alert.alert('Error', error.response?.data?.detail || 'Failed to update profile');
+            Alert.alert('Hata', error.response?.data?.detail || 'Profil güncellenemedi');
         } finally {
             setSaving(false);
         }
@@ -78,26 +78,26 @@ export default function PersonalInfoScreen({ navigation }) {
 
     const handleChangePassword = async () => {
         if (!currentPassword || !newPassword || !confirmPassword) {
-            Alert.alert('Error', 'Please fill in all password fields');
+            Alert.alert('Hata', 'Lütfen tüm şifre alanlarını doldurun');
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            Alert.alert('Error', 'New passwords do not match');
+            Alert.alert('Hata', 'Yeni şifreler eşleşmiyor');
             return;
         }
 
         if (newPassword.length < 6) {
-            Alert.alert('Error', 'New password must be at least 6 characters long');
+            Alert.alert('Hata', 'Yeni şifre en az 6 karakter olmalıdır');
             return;
         }
 
         try {
             setSaving(true);
             await changePassword(currentPassword, newPassword);
-            Alert.alert('Success', 'Password changed successfully', [
+            Alert.alert('Başarılı', 'Şifre başarıyla değiştirildi', [
                 {
-                    text: 'OK',
+                    text: 'Tamam',
                     onPress: () => {
                         setCurrentPassword('');
                         setNewPassword('');
@@ -108,7 +108,7 @@ export default function PersonalInfoScreen({ navigation }) {
             ]);
         } catch (error) {
             console.error('Failed to change password:', error);
-            Alert.alert('Error', error.response?.data?.detail || 'Failed to change password');
+            Alert.alert('Hata', error.response?.data?.detail || 'Şifre değiştirilemedi');
         } finally {
             setSaving(false);
         }
@@ -130,33 +130,33 @@ export default function PersonalInfoScreen({ navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Personal Information</Text>
+                <Text style={styles.headerTitle}>Kişisel Bilgiler</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <ScrollView style={styles.content}>
                 {/* Profile Information Section */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>PROFILE INFORMATION</Text>
+                    <Text style={styles.sectionTitle}>PROFİL BİLGİLERİ</Text>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Full Name</Text>
+                        <Text style={styles.label}>Ad Soyad</Text>
                         <TextInput
                             style={styles.input}
                             value={fullName}
                             onChangeText={setFullName}
-                            placeholder="Enter your full name"
+                            placeholder="Adınızı girin"
                             placeholderTextColor="#999"
                         />
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Email</Text>
+                        <Text style={styles.label}>E-posta</Text>
                         <TextInput
                             style={styles.input}
                             value={email}
                             onChangeText={setEmail}
-                            placeholder="Enter your email"
+                            placeholder="E-posta adresinizi girin"
                             placeholderTextColor="#999"
                             keyboardType="email-address"
                             autoCapitalize="none"
@@ -164,12 +164,12 @@ export default function PersonalInfoScreen({ navigation }) {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Phone Number</Text>
+                        <Text style={styles.label}>Telefon Numarası</Text>
                         <TextInput
                             style={styles.input}
                             value={phone}
                             onChangeText={setPhone}
-                            placeholder="Enter your phone number"
+                            placeholder="Telefon numaranızı girin"
                             placeholderTextColor="#999"
                             keyboardType="phone-pad"
                         />
@@ -183,7 +183,7 @@ export default function PersonalInfoScreen({ navigation }) {
                         {saving ? (
                             <ActivityIndicator color="#fff" />
                         ) : (
-                            <Text style={styles.saveButtonText}>Save Changes</Text>
+                            <Text style={styles.saveButtonText}>Değişiklikleri Kaydet</Text>
                         )}
                     </TouchableOpacity>
                 </View>
@@ -191,12 +191,12 @@ export default function PersonalInfoScreen({ navigation }) {
                 {/* Password Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>PASSWORD</Text>
+                        <Text style={styles.sectionTitle}>ŞİFRE</Text>
                         <TouchableOpacity
                             onPress={() => setShowPasswordSection(!showPasswordSection)}
                         >
                             <Text style={styles.changePasswordButton}>
-                                {showPasswordSection ? 'Cancel' : 'Change Password'}
+                                {showPasswordSection ? 'İptal' : 'Şifre Değiştir'}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -204,36 +204,36 @@ export default function PersonalInfoScreen({ navigation }) {
                     {showPasswordSection && (
                         <>
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Current Password</Text>
+                                <Text style={styles.label}>Mevcut Şifre</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={currentPassword}
                                     onChangeText={setCurrentPassword}
-                                    placeholder="Enter current password"
+                                    placeholder="Mevcut şifrenizi girin"
                                     placeholderTextColor="#999"
                                     secureTextEntry
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>New Password</Text>
+                                <Text style={styles.label}>Yeni Şifre</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={newPassword}
                                     onChangeText={setNewPassword}
-                                    placeholder="Enter new password"
+                                    placeholder="Yeni şifrenizi girin"
                                     placeholderTextColor="#999"
                                     secureTextEntry
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Confirm New Password</Text>
+                                <Text style={styles.label}>Yeni Şifre Tekrar</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={confirmPassword}
                                     onChangeText={setConfirmPassword}
-                                    placeholder="Confirm new password"
+                                    placeholder="Yeni şifrenizi tekrar girin"
                                     placeholderTextColor="#999"
                                     secureTextEntry
                                 />
@@ -247,7 +247,7 @@ export default function PersonalInfoScreen({ navigation }) {
                                 {saving ? (
                                     <ActivityIndicator color="#fff" />
                                 ) : (
-                                    <Text style={styles.saveButtonText}>Update Password</Text>
+                                    <Text style={styles.saveButtonText}>Şifreyi Güncelle</Text>
                                 )}
                             </TouchableOpacity>
                         </>

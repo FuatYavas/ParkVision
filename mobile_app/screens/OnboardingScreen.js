@@ -16,18 +16,18 @@ export default function OnboardingScreen({ navigation }) {
     const features = [
         {
             icon: 'time-outline',
-            title: 'Real-Time Availability',
-            description: 'Check parking spot availability in real-time.'
+            title: 'Gerçek Zamanlı Doluluk',
+            description: 'Park yeri müsaitliğini anlık olarak kontrol edin.'
         },
         {
             icon: 'calendar-outline',
-            title: 'Effortless Reservations',
-            description: 'Book your spot in advance with just a few taps.'
+            title: 'Kolay Rezervasyon',
+            description: 'Birkaç dokunusla yerinizi önceden ayırtın.'
         },
         {
             icon: 'navigate-outline',
-            title: 'Smart Navigation',
-            description: 'Get turn-by-turn directions to your reserved spot.'
+            title: 'Akıllı Navigasyon',
+            description: 'Rezerve ettiğiniz yere adım adım yol tarifi alın.'
         }
     ];
 
@@ -51,9 +51,9 @@ export default function OnboardingScreen({ navigation }) {
                         </View>
                     </View>
 
-                    <Text style={styles.title}>Your Smart Parking Companion</Text>
+                    <Text style={styles.title}>Akıllı Park Asistanınız</Text>
                     <Text style={styles.subtitle}>
-                        Efficiently locate, reserve, and navigate to your perfect parking spot.
+                        Mükemmel park yerinizi kolayca bulun, rezerve edin ve navigasyonla ulaşın.
                     </Text>
                 </View>
 
@@ -82,11 +82,11 @@ export default function OnboardingScreen({ navigation }) {
                 {/* Footer Buttons */}
                 <View style={styles.footer}>
                     <TouchableOpacity style={styles.skipButton} onPress={handleGetStarted}>
-                        <Text style={styles.skipButtonText}>Skip</Text>
+                        <Text style={styles.skipButtonText}>Atla</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted}>
-                        <Text style={styles.getStartedButtonText}>Get Started</Text>
+                        <Text style={styles.getStartedButtonText}>Başla</Text>
                     </TouchableOpacity>
                 </View>
             </View>
