@@ -15,6 +15,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import PersonalInfoScreen from './screens/PersonalInfoScreen';
 import VehiclesScreen from './screens/VehiclesScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import PlaceholderScreen from './screens/PlaceholderScreen';
 
@@ -143,7 +144,11 @@ export default function App() {
           component={FavoritesScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="Notifications" component={PlaceholderScreen} initialParams={{ title: 'Notifications' }} />
+        <Stack.Screen 
+          name="Notifications" 
+          component={NotificationsScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="Appearance" component={PlaceholderScreen} initialParams={{ title: 'Appearance' }} />
         <Stack.Screen name="Language" component={PlaceholderScreen} initialParams={{ title: 'Language' }} />
       </Stack.Navigator>

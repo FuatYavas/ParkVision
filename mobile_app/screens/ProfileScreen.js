@@ -57,7 +57,7 @@ export default function ProfileScreen({ navigation }) {
         {
             title: 'AYARLAR',
             items: [
-                { icon: 'notifications-outline', label: 'Bildirimler', route: 'Notifications', active: false },
+                { icon: 'notifications-outline', label: 'Bildirimler', route: 'Notifications', active: true },
                 { icon: 'moon-outline', label: 'Görünüm', value: 'Sistem', route: 'Appearance', active: false },
                 { icon: 'globe-outline', label: 'Dil', value: 'Türkçe', route: 'Language', active: false },
             ]
