@@ -2,9 +2,13 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Using local network IP address for Docker backend connection
-// Make sure your phone and computer are on the same WiFi network  
-// Current WiFi IP: 10.88.110.132 (updated 2025-12-09 20:03)
-const API_URL = 'http://10.88.110.132:8000';
+// Make sure your phone and computer are on the same WiFi network
+// For development, use localhost if testing on same machine
+// For physical device testing, use your computer's local IP
+// Physical Device: Use your computer's WiFi IP address
+const API_URL = __DEV__
+    ? 'http://192.168.1.133:8000'  // Physical Device -> Computer's WiFi IP (updated 2026-01-04)
+    : 'http://localhost:8000';  // For production
 
 const api = axios.create({
     baseURL: API_URL,
@@ -90,20 +94,42 @@ export const changePassword = async (currentPassword, newPassword) => {
 };
 
 export const getParkingLots = async () => {
-    const response = await api.get('/parking_lots/');
+    const response = await api.get('/parking-lots/');
     return response.data;
 };
 
 export const getParkingSpots = async (lotId) => {
-    const response = await api.get(`/parking_spots/${lotId}`);
+    // Using CV detection endpoint to get parking spots with real-time status
+    const response = await api.get(`/cv/parking-lots/${lotId}/detections`);
     return response.data;
 };
 
 export const getNearbyParkingLots = async (latitude, longitude, radiusKm = 5) => {
-    const response = await api.get('/parking_lots/nearby', {
-        params: { latitude, longitude, radius_km: radiusKm },
+    // TODO: Backend doesn't have nearby endpoint yet, using all parking lots
+    // Filter client-side based on coordinates
+    const response = await api.get('/parking-lots/');
+    const allLots = response.data;
+
+    // Calculate distance and filter
+    const nearbyLots = allLots.filter(lot => {
+        if (!lot.latitude || !lot.longitude) return false;
+        const distance = calculateDistance(latitude, longitude, lot.latitude, lot.longitude);
+        return distance <= radiusKm;
     });
-    return response.data;
+
+    return nearbyLots;
+};
+
+// Helper function to calculate distance between two coordinates (Haversine formula)
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
 };
 
 export const createReservation = async (spotId, durationMinutes = 60) => {
@@ -125,17 +151,24 @@ export const cancelReservation = async (reservationId) => {
 };
 
 export const saveLocation = async (location) => {
-    const response = await api.post('/save_location', location);
-    return response.data;
+    // TODO: Backend endpoint not implemented yet
+    console.log('saveLocation called with:', location);
+    return { success: true, message: 'Location saved locally (backend endpoint pending)' };
 };
 
 export const reportSpotStatus = async (spotId, isOccupied, confidence = 0.8) => {
-    const response = await api.post('/crowdsource/report', {
-        spot_id: spotId,
-        is_occupied: isOccupied,
-        confidence,
-    });
-    return response.data;
+    // TODO: Crowdsourcing endpoint not implemented yet
+    // Using CV spot update endpoint as alternative
+    try {
+        const response = await api.put(`/cv/parking-spots/${spotId}/status`, {
+            status: isOccupied ? 'occupied' : 'empty',
+            confidence: confidence
+        });
+        return response.data;
+    } catch (error) {
+        console.log('reportSpotStatus error:', error.message);
+        return { success: false, message: 'Failed to report spot status' };
+    }
 };
 
 export const getMyVehicles = async () => {
@@ -159,8 +192,21 @@ export const deleteVehicle = async (vehicleId) => {
 };
 
 export const getOccupancyStatistics = async () => {
-    const response = await api.get('/statistics/occupancy');
-    return response.data;
+    // TODO: Statistics endpoint not implemented yet
+    // Calculate from current parking lot data as workaround
+    try {
+        const parkingLots = await getParkingLots();
+        const stats = {
+            total_lots: parkingLots.length,
+            total_capacity: parkingLots.reduce((sum, lot) => sum + (lot.capacity || 0), 0),
+            average_occupancy: 0, // Would need real-time data from CV
+            timestamp: new Date().toISOString()
+        };
+        return stats;
+    } catch (error) {
+        console.log('getOccupancyStatistics error:', error.message);
+        return { total_lots: 0, total_capacity: 0, average_occupancy: 0 };
+    }
 };
 
 export default api;

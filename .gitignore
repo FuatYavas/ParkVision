@@ -101,3 +101,7 @@ ehthumbs.db
 build/
 dist/
 
+
+# Ignore nul files (Windows reserved name)
+nul
+**/nul

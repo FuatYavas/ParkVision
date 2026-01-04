@@ -75,8 +75,9 @@ class ReservationBase(BaseModel):
     start_time: datetime
     end_time: datetime
 
-class ReservationCreate(ReservationBase):
-    pass
+class ReservationCreate(BaseModel):
+    spot_id: int
+    duration_minutes: int = 60  # Default 1 hour
 
 class ReservationRead(ReservationBase):
     id: int
@@ -101,6 +102,36 @@ class ReportRead(ReportBase):
     user_id: int
     timestamp: datetime
     is_verified: bool
-    
+
     class Config:
         orm_mode = True
+
+
+# CV Module Schemas
+class DetectionData(BaseModel):
+    class_name: str
+    confidence: float
+    x: int
+    y: int
+    width: int
+    height: int
+    is_empty: bool
+
+
+class ParkingLotStatusUpdate(BaseModel):
+    total_spots: int
+    empty_spots: int
+    occupied_spots: int
+    occupancy_rate: float
+    detections: list[DetectionData] = []
+
+
+class ParkingSpotStatusUpdate(BaseModel):
+    status: str  # "empty", "occupied", "reserved"
+    confidence: float = 1.0
+
+
+class CVEvent(BaseModel):
+    parking_lot_id: int
+    event_type: str
+    data: dict

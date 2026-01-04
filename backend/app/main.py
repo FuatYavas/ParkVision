@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import create_db_and_tables
-from app.routers import auth, parking, reservations, users, reports
+from app.routers import auth, parking, reservations, users, reports, cv
 from app.core.config import settings
 from app.websockets import manager
 
@@ -25,10 +25,18 @@ app.include_router(parking.router)
 app.include_router(reservations.router)
 app.include_router(users.router)
 app.include_router(reports.router)
+app.include_router(cv.router)
+
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to ParkVision API"}
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for CV module and monitoring"""
+    return {"status": "healthy", "service": "ParkVision API"}
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):

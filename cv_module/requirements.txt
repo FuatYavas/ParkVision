@@ -1,4 +1,5 @@
-opencv-python
-ultralytics
-requests
-numpy
+opencv-python>=4.8.0
+roboflow>=1.1.0
+requests>=2.31.0
+numpy>=1.24.0
+python-dotenv>=1.0.0

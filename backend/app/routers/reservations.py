@@ -1,5 +1,5 @@
 from typing import List, Annotated
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
@@ -29,11 +29,15 @@ def create_reservation(
     # Generate reservation code
     reservation_code = str(uuid.uuid4())[:8].upper()
     
+    # Calculate start and end times based on duration_minutes
+    start_time = datetime.utcnow()
+    end_time = start_time + timedelta(minutes=reservation_in.duration_minutes)
+    
     reservation = Reservation(
         user_id=current_user.id,
         spot_id=reservation_in.spot_id,
-        start_time=reservation_in.start_time,
-        end_time=reservation_in.end_time,
+        start_time=start_time,
+        end_time=end_time,
         reservation_code=reservation_code,
         status=ReservationStatus.ACTIVE
     )
@@ -52,6 +56,16 @@ def read_reservations(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
+    statement = select(Reservation).where(Reservation.user_id == current_user.id)
+    reservations = session.exec(statement).all()
+    return reservations
+
+@router.get("/my", response_model=List[ReservationRead])
+def read_my_reservations(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Get all reservations for current user (alias for /)"""
     statement = select(Reservation).where(Reservation.user_id == current_user.id)
     reservations = session.exec(statement).all()
     return reservations

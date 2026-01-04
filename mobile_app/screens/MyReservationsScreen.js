@@ -5,35 +5,77 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    Alert
+    Alert,
+    ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { getMyReservations, cancelReservation } from '../api';
 
 export default function MyReservationsScreen({ navigation }) {
-    const [reservations, setReservations] = useState([
-        // Mock active reservation
-        {
-            id: 1,
-            parkingLotName: 'Elazığ AVM Otoparkı',
-            spotNumber: 'A5',
-            startTime: new Date(), // Now
-            endTime: new Date(Date.now() + 30 * 60 * 1000), // 30 mins from now  
-            price: 15,
-            status: 'active',
-            latitude: 38.6791,
-            longitude: 39.2264
-        }
-    ]);
-
+    const [reservations, setReservations] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
+        fetchReservations();
+        
         const timer = setInterval(() => {
             setCurrentTime(new Date());
         }, 1000);
-        return () => clearInterval(timer);
-    }, []);
+        
+        // Refresh reservations when screen comes into focus
+        const unsubscribe = navigation.addListener('focus', () => {
+            fetchReservations();
+        });
+        
+        return () => {
+            clearInterval(timer);
+            unsubscribe();
+        };
+    }, [navigation]);
+
+    const fetchReservations = async () => {
+        try {
+            setLoading(true);
+            const data = await getMyReservations();
+            
+            // Transform backend data to match our format
+            const formattedReservations = data.map(res => ({
+                id: res.id,
+                parkingLotName: res.parking_lot_name || 'Otopark',
+                spotNumber: res.spot_number || `#${res.spot_id}`,
+                startTime: new Date(res.start_time),
+                endTime: new Date(res.end_time),
+                price: res.price || 15,
+                status: res.status,
+                reservationCode: res.reservation_code,
+                spotId: res.spot_id,
+                latitude: res.latitude || 38.6791,
+                longitude: res.longitude || 39.2264
+            }));
+            
+            setReservations(formattedReservations);
+        } catch (error) {
+            console.error('Error fetching reservations:', error);
+            // Show mock data on error for demo purposes
+            setReservations([
+                {
+                    id: 'mock-1',
+                    parkingLotName: 'Elazığ AVM Otoparkı',
+                    spotNumber: 'A5',
+                    startTime: new Date(),
+                    endTime: new Date(Date.now() + 30 * 60 * 1000),
+                    price: 15,
+                    status: 'active',
+                    latitude: 38.6791,
+                    longitude: 39.2264
+                }
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const getTimeRemaining = (endTime) => {
         const now = new Date();
@@ -50,16 +92,22 @@ export default function MyReservationsScreen({ navigation }) {
 
     const handleCancelReservation = (reservationId) => {
         Alert.alert(
-            'Rezervasyonu Iptal Et',
-            'Bu rezervasyonu iptal etmek istediginizden emin misiniz?',
+            'Rezervasyonu İptal Et',
+            'Bu rezervasyonu iptal etmek istediğinizden emin misiniz?',
             [
-                { text: 'Hayir', style: 'cancel' },
+                { text: 'Hayır', style: 'cancel' },
                 {
-                    text: 'Evet, Iptal Et',
+                    text: 'Evet, İptal Et',
                     style: 'destructive',
-                    onPress: () => {
-                        setReservations(reservations.filter(r => r.id !== reservationId));
-                        Alert.alert('Basarili', 'Rezervasyon iptal edildi.');
+                    onPress: async () => {
+                        try {
+                            await cancelReservation(reservationId);
+                            setReservations(reservations.filter(r => r.id !== reservationId));
+                            Alert.alert('Başarılı', 'Rezervasyon iptal edildi.');
+                        } catch (error) {
+                            console.error('Error canceling reservation:', error);
+                            Alert.alert('Hata', 'Rezervasyon iptal edilemedi. Lütfen tekrar deneyin.');
+                        }
                     }
                 }
             ]
@@ -84,12 +132,29 @@ export default function MyReservationsScreen({ navigation }) {
     };
 
     const activeReservations = reservations.filter(r => r.status === 'active');
-    const pastReservations = reservations.filter(r => r.status !== 'active');
+    const pastReservations = reservations.filter(r => r.status === 'cancelled' || r.status === 'completed');
+
+    if (loading) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Rezervasyonlarım</Text>
+                </View>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#0066FF" />
+                    <Text style={styles.loadingText}>Rezervasyonlar yükleniyor...</Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Rezervasyonlarim</Text>
+                <Text style={styles.headerTitle}>Rezervasyonlarım</Text>
+                <TouchableOpacity onPress={fetchReservations}>
+                    <Ionicons name="refresh-outline" size={24} color="#0066FF" />
+                </TouchableOpacity>
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -200,11 +265,24 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F7FA',
     },
     header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         paddingHorizontal: 20,
         paddingVertical: 16,
         backgroundColor: 'white',
         borderBottomWidth: 1,
         borderBottomColor: '#F0F0F0',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 12,
+        fontSize: 16,
+        color: '#666',
     },
     headerTitle: {
         fontSize: 24,

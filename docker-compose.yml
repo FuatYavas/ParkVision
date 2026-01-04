@@ -16,6 +16,24 @@ services:
       - db
       - redis
 
+  cv_module:
+    build: ./cv_module
+    container_name: parkvision_cv
+    volumes:
+      - ./cv_module:/app
+      - ./test_images:/app/test_images
+    environment:
+      - ROBOFLOW_API_KEY=u3Zw1v8EkVB6S2Qd8JrL
+      - BACKEND_API_URL=http://backend:8000
+      - PROCESSING_INTERVAL=2.0
+      - CONFIDENCE_THRESHOLD=0.5
+      - LOG_LEVEL=INFO
+    depends_on:
+      - backend
+    # For video streaming from host camera (optional)
+    # devices:
+    #   - /dev/video0:/dev/video0
+
   db:
     image: postgres:15-alpine
     container_name: parkvision_db

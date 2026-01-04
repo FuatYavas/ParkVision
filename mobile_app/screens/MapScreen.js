@@ -9,7 +9,8 @@ import {
     Dimensions,
     Image,
     Platform,
-    Alert
+    Alert,
+    Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker } from 'react-native-maps';
@@ -26,9 +27,17 @@ import { mockParkingLots } from '../data/mockData';
 export default function MapScreen({ navigation }) {
     const [location, setLocation] = useState(null);
     const [parkingLots, setParkingLots] = useState([]);
+    const [allParkingLots, setAllParkingLots] = useState([]); // Store all lots
     const [selectedLot, setSelectedLot] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
+    const [filters, setFilters] = useState({
+        maxPrice: null,
+        maxDistance: null,
+        features: [],
+        sortBy: 'distance' // distance, price, occupancy
+    });
+    const [activeModal, setActiveModal] = useState(null); // 'price', 'distance', 'features', 'sort'
     const mapRef = React.useRef(null);
 
     useEffect(() => {
@@ -74,10 +83,351 @@ export default function MapScreen({ navigation }) {
             distance: lot.distance,
             rating: lot.rating,
             isOpen: lot.is_active,
-            features: lot.features
+            features: lot.features || []
         }));
+        setAllParkingLots(formattedLots);
         setParkingLots(formattedLots);
     };
+
+    // Filter and search parking lots
+    const applyFilters = () => {
+        let filtered = [...allParkingLots];
+
+        // Apply search
+        if (searchQuery.trim()) {
+            filtered = filtered.filter(lot =>
+                lot.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        // Apply price filter
+        if (filters.maxPrice) {
+            filtered = filtered.filter(lot => lot.price <= filters.maxPrice);
+        }
+
+        // Apply distance filter
+        if (filters.maxDistance) {
+            filtered = filtered.filter(lot => {
+                const dist = parseFloat(lot.distance);
+                return !isNaN(dist) && dist <= filters.maxDistance;
+            });
+        }
+
+        // Apply features filter
+        if (filters.features.length > 0) {
+            filtered = filtered.filter(lot =>
+                filters.features.every(feature =>
+                    lot.features && lot.features.includes(feature)
+                )
+            );
+        }
+
+        // Apply sorting
+        filtered.sort((a, b) => {
+            switch (filters.sortBy) {
+                case 'price':
+                    return a.price - b.price;
+                case 'occupancy':
+                    return a.occupancy - b.occupancy;
+                case 'distance':
+                default:
+                    const distA = parseFloat(a.distance) || 999;
+                    const distB = parseFloat(b.distance) || 999;
+                    return distA - distB;
+            }
+        });
+
+        setParkingLots(filtered);
+    };
+
+    // Apply filters when search or filters change
+    useEffect(() => {
+        if (allParkingLots.length > 0) {
+            applyFilters();
+        }
+    }, [searchQuery, filters, allParkingLots]);
+
+    const handlePriceFilter = () => {
+        setActiveModal('price');
+    };
+
+    const handleDistanceFilter = () => {
+        setActiveModal('distance');
+    };
+
+    const handleFeaturesFilter = () => {
+        setActiveModal('features');
+    };
+
+    const handleMainFilter = () => {
+        setActiveModal('sort');
+    };
+
+    const toggleFeature = (feature) => {
+        const currentFeatures = filters.features;
+        if (currentFeatures.includes(feature)) {
+            setFilters({
+                ...filters,
+                features: currentFeatures.filter(f => f !== feature)
+            });
+        } else {
+            setFilters({
+                ...filters,
+                features: [...currentFeatures, feature]
+            });
+        }
+    };
+
+    const renderPriceModal = () => (
+        <Modal
+            visible={activeModal === 'price'}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setActiveModal(null)}
+        >
+            <TouchableOpacity 
+                style={styles.modalOverlay} 
+                activeOpacity={1} 
+                onPress={() => setActiveModal(null)}
+            >
+                <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>Fiyat Filtresi</Text>
+                        <TouchableOpacity onPress={() => setActiveModal(null)}>
+                            <Ionicons name="close" size={24} color="#666" />
+                        </TouchableOpacity>
+                    </View>
+                    
+                    <View style={styles.modalBody}>
+                        {[
+                            { label: 'Tümü', value: null },
+                            { label: '10₺ ve altı', value: 10 },
+                            { label: '20₺ ve altı', value: 20 },
+                            { label: '30₺ ve altı', value: 30 },
+                            { label: '50₺ ve altı', value: 50 }
+                        ].map((option) => (
+                            <TouchableOpacity
+                                key={option.label}
+                                style={styles.optionRow}
+                                onPress={() => {
+                                    setFilters({ ...filters, maxPrice: option.value });
+                                    setActiveModal(null);
+                                }}
+                            >
+                                <Text style={styles.optionText}>{option.label}</Text>
+                                {filters.maxPrice === option.value && (
+                                    <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
+                                )}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                    
+                    <TouchableOpacity
+                        style={styles.clearButton}
+                        onPress={() => {
+                            setFilters({ ...filters, maxPrice: null });
+                            setActiveModal(null);
+                        }}
+                    >
+                        <Text style={styles.clearButtonText}>Temizle</Text>
+                    </TouchableOpacity>
+                </View>
+            </TouchableOpacity>
+        </Modal>
+    );
+
+    const renderDistanceModal = () => (
+        <Modal
+            visible={activeModal === 'distance'}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setActiveModal(null)}
+        >
+            <TouchableOpacity 
+                style={styles.modalOverlay} 
+                activeOpacity={1} 
+                onPress={() => setActiveModal(null)}
+            >
+                <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>Mesafe Filtresi</Text>
+                        <TouchableOpacity onPress={() => setActiveModal(null)}>
+                            <Ionicons name="close" size={24} color="#666" />
+                        </TouchableOpacity>
+                    </View>
+                    
+                    <View style={styles.modalBody}>
+                        {[
+                            { label: 'Tümü', value: null },
+                            { label: '1 km içinde', value: 1 },
+                            { label: '3 km içinde', value: 3 },
+                            { label: '5 km içinde', value: 5 },
+                            { label: '10 km içinde', value: 10 }
+                        ].map((option) => (
+                            <TouchableOpacity
+                                key={option.label}
+                                style={styles.optionRow}
+                                onPress={() => {
+                                    setFilters({ ...filters, maxDistance: option.value });
+                                    setActiveModal(null);
+                                }}
+                            >
+                                <Text style={styles.optionText}>{option.label}</Text>
+                                {filters.maxDistance === option.value && (
+                                    <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
+                                )}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                    
+                    <TouchableOpacity
+                        style={styles.clearButton}
+                        onPress={() => {
+                            setFilters({ ...filters, maxDistance: null });
+                            setActiveModal(null);
+                        }}
+                    >
+                        <Text style={styles.clearButtonText}>Temizle</Text>
+                    </TouchableOpacity>
+                </View>
+            </TouchableOpacity>
+        </Modal>
+    );
+
+    const renderFeaturesModal = () => (
+        <Modal
+            visible={activeModal === 'features'}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setActiveModal(null)}
+        >
+            <TouchableOpacity 
+                style={styles.modalOverlay} 
+                activeOpacity={1} 
+                onPress={() => setActiveModal(null)}
+            >
+                <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>Özellikler</Text>
+                        <TouchableOpacity onPress={() => setActiveModal(null)}>
+                            <Ionicons name="close" size={24} color="#666" />
+                        </TouchableOpacity>
+                    </View>
+                    
+                    <View style={styles.modalBody}>
+                        {[
+                            { label: 'Güvenlik Kamerası', value: 'camera', icon: 'videocam-outline' },
+                            { label: 'WiFi', value: 'wifi', icon: 'wifi-outline' },
+                            { label: 'Elektrikli Araç Şarjı', value: 'ev_charging', icon: 'flash-outline' },
+                            { label: 'Kapalı Alan', value: 'covered', icon: 'home-outline' }
+                        ].map((option) => (
+                            <TouchableOpacity
+                                key={option.value}
+                                style={styles.optionRow}
+                                onPress={() => toggleFeature(option.value)}
+                            >
+                                <View style={styles.optionLeft}>
+                                    <Ionicons name={option.icon} size={20} color="#666" style={{ marginRight: 12 }} />
+                                    <Text style={styles.optionText}>{option.label}</Text>
+                                </View>
+                                {filters.features.includes(option.value) ? (
+                                    <Ionicons name="checkbox" size={24} color="#0066FF" />
+                                ) : (
+                                    <Ionicons name="square-outline" size={24} color="#CCC" />
+                                )}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                    
+                    <View style={styles.modalActions}>
+                        <TouchableOpacity
+                            style={styles.clearButton}
+                            onPress={() => {
+                                setFilters({ ...filters, features: [] });
+                            }}
+                        >
+                            <Text style={styles.clearButtonText}>Temizle</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.applyButton}
+                            onPress={() => setActiveModal(null)}
+                        >
+                            <Text style={styles.applyButtonText}>Uygula</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        </Modal>
+    );
+
+    const renderSortModal = () => (
+        <Modal
+            visible={activeModal === 'sort'}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setActiveModal(null)}
+        >
+            <TouchableOpacity 
+                style={styles.modalOverlay} 
+                activeOpacity={1} 
+                onPress={() => setActiveModal(null)}
+            >
+                <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>Sıralama ve Filtreler</Text>
+                        <TouchableOpacity onPress={() => setActiveModal(null)}>
+                            <Ionicons name="close" size={24} color="#666" />
+                        </TouchableOpacity>
+                    </View>
+                    
+                    <View style={styles.modalBody}>
+                        <Text style={styles.sectionTitle}>SIRALAMA</Text>
+                        {[
+                            { label: 'Mesafeye Göre', value: 'distance', icon: 'navigate-outline' },
+                            { label: 'Fiyata Göre', value: 'price', icon: 'cash-outline' },
+                            { label: 'Doluluk Oranına Göre', value: 'occupancy', icon: 'car-outline' }
+                        ].map((option) => (
+                            <TouchableOpacity
+                                key={option.value}
+                                style={styles.optionRow}
+                                onPress={() => {
+                                    setFilters({ ...filters, sortBy: option.value });
+                                }}
+                            >
+                                <View style={styles.optionLeft}>
+                                    <Ionicons name={option.icon} size={20} color="#666" style={{ marginRight: 12 }} />
+                                    <Text style={styles.optionText}>{option.label}</Text>
+                                </View>
+                                {filters.sortBy === option.value && (
+                                    <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
+                                )}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                    
+                    <View style={styles.modalActions}>
+                        <TouchableOpacity
+                            style={styles.clearAllButton}
+                            onPress={() => {
+                                setFilters({ maxPrice: null, maxDistance: null, features: [], sortBy: 'distance' });
+                                setSearchQuery('');
+                                setActiveModal(null);
+                            }}
+                        >
+                            <Ionicons name="trash-outline" size={20} color="#F44336" style={{ marginRight: 8 }} />
+                            <Text style={styles.clearAllButtonText}>Tüm Filtreleri Temizle</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.applyButton}
+                            onPress={() => setActiveModal(null)}
+                        >
+                            <Text style={styles.applyButtonText}>Uygula</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        </Modal>
+    );
 
     const fetchParkingLots = async () => {
         try {
@@ -203,24 +553,75 @@ export default function MapScreen({ navigation }) {
                     style={styles.filtersContainer}
                     contentContainerStyle={styles.filtersContent}
                 >
-                    <TouchableOpacity style={styles.filterChip}>
-                        <Ionicons name="options-outline" size={16} color="#333" />
-                        <Text style={styles.filterText}>Filtrele</Text>
+                    <TouchableOpacity 
+                        style={[
+                            styles.filterChip,
+                            (filters.maxPrice || filters.maxDistance || filters.features.length > 0) && styles.filterChipActive
+                        ]}
+                        onPress={handleMainFilter}
+                    >
+                        <Ionicons name="options-outline" size={16} color={
+                            (filters.maxPrice || filters.maxDistance || filters.features.length > 0) ? "#0066FF" : "#333"
+                        } />
+                        <Text style={[
+                            styles.filterText,
+                            (filters.maxPrice || filters.maxDistance || filters.features.length > 0) && styles.filterTextActive
+                        ]}>Filtrele</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.filterChip}>
-                        <Ionicons name="cash-outline" size={16} color="#333" />
-                        <Text style={styles.filterText}>Fiyat</Text>
+                    <TouchableOpacity 
+                        style={[styles.filterChip, filters.maxPrice && styles.filterChipActive]}
+                        onPress={handlePriceFilter}
+                    >
+                        <Ionicons name="cash-outline" size={16} color={filters.maxPrice ? "#0066FF" : "#333"} />
+                        <Text style={[styles.filterText, filters.maxPrice && styles.filterTextActive]}>
+                            {filters.maxPrice ? `${filters.maxPrice}₺ altı` : 'Fiyat'}
+                        </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.filterChip}>
-                        <Ionicons name="resize-outline" size={16} color="#333" />
-                        <Text style={styles.filterText}>Mesafe</Text>
+                    <TouchableOpacity 
+                        style={[styles.filterChip, filters.maxDistance && styles.filterChipActive]}
+                        onPress={handleDistanceFilter}
+                    >
+                        <Ionicons name="resize-outline" size={16} color={filters.maxDistance ? "#0066FF" : "#333"} />
+                        <Text style={[styles.filterText, filters.maxDistance && styles.filterTextActive]}>
+                            {filters.maxDistance ? `${filters.maxDistance} km` : 'Mesafe'}
+                        </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.filterChip}>
-                        <Ionicons name="home-outline" size={16} color="#333" />
-                        <Text style={styles.filterText}>Özellikler</Text>
+                    <TouchableOpacity 
+                        style={[styles.filterChip, filters.features.length > 0 && styles.filterChipActive]}
+                        onPress={handleFeaturesFilter}
+                    >
+                        <Ionicons name="home-outline" size={16} color={filters.features.length > 0 ? "#0066FF" : "#333"} />
+                        <Text style={[styles.filterText, filters.features.length > 0 && styles.filterTextActive]}>
+                            {filters.features.length > 0 ? `${filters.features.length} özellik` : 'Özellikler'}
+                        </Text>
                     </TouchableOpacity>
                 </ScrollView>
+                
+                {/* Results count */}
+                {searchQuery.trim() || filters.maxPrice || filters.maxDistance || filters.features.length > 0 ? (
+                    <View style={styles.resultsBar}>
+                        <Text style={styles.resultsText}>
+                            {parkingLots.length} otopark bulundu
+                        </Text>
+                        {(filters.maxPrice || filters.maxDistance || filters.features.length > 0 || searchQuery.trim()) && (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setFilters({ maxPrice: null, maxDistance: null, features: [], sortBy: 'distance' });
+                                    setSearchQuery('');
+                                }}
+                            >
+                                <Text style={styles.clearFiltersText}>Temizle</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                ) : null}
             </SafeAreaView>
+
+            {/* Modals */}
+            {renderPriceModal()}
+            {renderDistanceModal()}
+            {renderFeaturesModal()}
+            {renderSortModal()}
 
             {/* Bottom Card */}
             {selectedLot && (
@@ -333,11 +734,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 12,
         padding: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
         marginBottom: 12,
     },
     searchIcon: {
@@ -358,20 +756,147 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'white',
         paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
+        paddingVertical: 10,
+        borderRadius: 25,
         marginRight: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
     },
     filterText: {
         marginLeft: 4,
         fontSize: 14,
         fontWeight: '500',
         color: '#333',
+    },
+    filterChipActive: {
+        backgroundColor: '#E3F2FD',
+        borderColor: '#0066FF',
+        borderWidth: 1.5,
+    },
+    filterTextActive: {
+        color: '#0066FF',
+        fontWeight: '600',
+    },
+    resultsBar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        marginTop: 8,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    resultsText: {
+        fontSize: 14,
+        color: '#666',
+        fontWeight: '500',
+    },
+    clearFiltersText: {
+        fontSize: 14,
+        color: '#0066FF',
+        fontWeight: '600',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+        maxHeight: '80%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    modalBody: {
+        padding: 20,
+    },
+    sectionTitle: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#999',
+        marginBottom: 12,
+        letterSpacing: 1,
+    },
+    optionRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F5F5F5',
+    },
+    optionLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    optionText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    clearButton: {
+        margin: 20,
+        marginTop: 0,
+        paddingVertical: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        alignItems: 'center',
+    },
+    clearButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#666',
+    },
+    modalActions: {
+        flexDirection: 'row',
+        gap: 12,
+        paddingHorizontal: 20,
+    },
+    applyButton: {
+        flex: 1,
+        backgroundColor: '#0066FF',
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    applyButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: 'white',
+    },
+    clearAllButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#FFEBEE',
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        borderRadius: 12,
+        marginBottom: 12,
+        marginHorizontal: 20,
+    },
+    clearAllButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#F44336',
     },
     markerContainer: {
         alignItems: 'center',
