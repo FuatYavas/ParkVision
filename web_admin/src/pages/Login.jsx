@@ -14,11 +14,16 @@ const Login = () => {
             formData.append('username', email);
             formData.append('password', password);
 
-            const response = await api.post('/auth/login', formData);
+            const response = await api.post('/token', formData, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            });
             localStorage.setItem('token', response.data.access_token);
             navigate('/dashboard');
         } catch (error) {
-            alert('Login failed');
+            console.error('Login error:', error);
+            alert('Login failed: ' + (error.response?.data?.detail || 'Invalid credentials'));
         }
     };
 

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import create_db_and_tables
-from app.routers import auth, parking, reservations, users, reports, cv
+from app.routers import auth, parking, reservations, users, reports, cv, dashboard
 from app.core.config import settings
 from app.websockets import manager
 
@@ -26,6 +26,7 @@ app.include_router(reservations.router)
 app.include_router(users.router)
 app.include_router(reports.router)
 app.include_router(cv.router)
+app.include_router(dashboard.router)
 
 
 @app.get("/")
