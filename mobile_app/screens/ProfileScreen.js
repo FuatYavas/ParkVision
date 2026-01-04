@@ -44,22 +44,21 @@ export default function ProfileScreen({ navigation }) {
             items: [
                 { icon: 'person-outline', label: 'Personal Information', route: 'PersonalInfo', active: true },
                 { icon: 'car-outline', label: 'My Vehicles', route: 'Vehicles', active: true },
-                { icon: 'card-outline', label: 'Payment Methods', route: 'Payment', active: false },
             ]
         },
         {
             title: 'ACTIVITY',
             items: [
                 { icon: 'time-outline', label: 'Reservation History', route: 'MyReservations', active: true },
-                { icon: 'heart-outline', label: 'Favorite Spots', route: 'Favorites', active: false },
+                { icon: 'heart-outline', label: 'Favorite Spots', route: 'Favorites', active: true },
             ]
         },
         {
             title: 'SETTINGS',
             items: [
-                { icon: 'notifications-outline', label: 'Notifications', route: 'Notifications', active: false },
-                { icon: 'moon-outline', label: 'Appearance', value: 'System', route: 'Appearance', active: false },
-                { icon: 'globe-outline', label: 'Language', value: 'English', route: 'Language', active: false },
+                { icon: 'notifications-outline', label: 'Notifications', route: 'Notifications', active: true },
+                { icon: 'moon-outline', label: 'Appearance', value: 'System', route: 'Appearance', active: true },
+                { icon: 'globe-outline', label: 'Language', value: 'English', route: 'Language', active: true },
             ]
         }
     ];
