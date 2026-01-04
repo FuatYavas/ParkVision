@@ -51,7 +51,7 @@ export default function ProfileScreen({ navigation }) {
             title: 'AKTİVİTE',
             items: [
                 { icon: 'time-outline', label: 'Rezervasyon Geçmişi', route: 'MyReservations', active: true },
-                { icon: 'heart-outline', label: 'Favori Otoparklar', route: 'Favorites', active: false },
+                { icon: 'heart-outline', label: 'Favori Otoparklar', route: 'Favorites', active: true },
             ]
         },
         {

@@ -14,6 +14,7 @@ import NavigationScreen from './screens/NavigationScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import PersonalInfoScreen from './screens/PersonalInfoScreen';
 import VehiclesScreen from './screens/VehiclesScreen';
+import FavoritesScreen from './screens/FavoritesScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import PlaceholderScreen from './screens/PlaceholderScreen';
 
@@ -55,7 +56,7 @@ function MainTabs() {
         component={FindMyCarScreen}
         options={{
           headerShown: false,
-          tabBarLabel: 'Find My Car'
+          tabBarLabel: 'Arabam'
         }}
       />
       <Tab.Screen
@@ -63,7 +64,7 @@ function MainTabs() {
         component={ProfileScreen}
         options={{
           headerShown: false,
-          tabBarLabel: 'Profile',
+          tabBarLabel: 'Profil',
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
           )
@@ -137,7 +138,11 @@ export default function App() {
           options={{ title: 'Reservation History' }}
         />
         <Stack.Screen name="Payment" component={PlaceholderScreen} initialParams={{ title: 'Payment Methods' }} />
-        <Stack.Screen name="Favorites" component={PlaceholderScreen} initialParams={{ title: 'Favorite Spots' }} />
+        <Stack.Screen 
+          name="Favorites" 
+          component={FavoritesScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="Notifications" component={PlaceholderScreen} initialParams={{ title: 'Notifications' }} />
         <Stack.Screen name="Appearance" component={PlaceholderScreen} initialParams={{ title: 'Appearance' }} />
         <Stack.Screen name="Language" component={PlaceholderScreen} initialParams={{ title: 'Language' }} />

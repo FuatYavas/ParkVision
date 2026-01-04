@@ -16,8 +16,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
+const FAVORITES_KEY = 'favorite_parking_lots';
 
 import { getParkingLots } from '../api';
 import { mockParkingLots } from '../data/mockData';
@@ -44,6 +46,7 @@ export default function MapScreen({ navigation }) {
         sortBy: 'distance' // distance, price, occupancy
     });
     const [activeModal, setActiveModal] = useState(null); // 'price', 'distance', 'features', 'sort'
+    const [favorites, setFavorites] = useState([]);
     const mapRef = React.useRef(null);
 
     useEffect(() => {
@@ -74,9 +77,36 @@ export default function MapScreen({ navigation }) {
 
         // Load mock data immediately for better UX
         loadMockData();
+        loadFavorites();
         // Disable API fetch - using only mock data for Elazığ
         // fetchParkingLots();
     }, []);
+
+    const loadFavorites = async () => {
+        try {
+            const stored = await AsyncStorage.getItem(FAVORITES_KEY);
+            if (stored) {
+                setFavorites(JSON.parse(stored));
+            }
+        } catch (error) {
+            console.error('Favoriler yüklenirken hata:', error);
+        }
+    };
+
+    const toggleFavorite = async (lotId) => {
+        try {
+            let updatedFavorites;
+            if (favorites.includes(lotId)) {
+                updatedFavorites = favorites.filter(id => id !== lotId);
+            } else {
+                updatedFavorites = [...favorites, lotId];
+            }
+            await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(updatedFavorites));
+            setFavorites(updatedFavorites);
+        } catch (error) {
+            console.error('Favori güncellenirken hata:', error);
+        }
+    };
 
     const loadMockData = () => {
         const formattedLots = mockParkingLots.map(lot => ({
@@ -635,9 +665,21 @@ export default function MapScreen({ navigation }) {
 
                     <View style={styles.cardHeader}>
                         <Text style={styles.cardTitle}>{selectedLot.name}</Text>
-                        <View style={styles.ratingContainer}>
-                            <Ionicons name="star" size={16} color="#FFC107" />
-                            <Text style={styles.ratingText}>{selectedLot.rating}</Text>
+                        <View style={styles.cardHeaderRight}>
+                            <TouchableOpacity
+                                style={styles.favoriteIconButton}
+                                onPress={() => toggleFavorite(selectedLot.id)}
+                            >
+                                <Ionicons 
+                                    name={favorites.includes(selectedLot.id) ? "heart" : "heart-outline"} 
+                                    size={22} 
+                                    color={favorites.includes(selectedLot.id) ? "#EF4444" : "#666"} 
+                                />
+                            </TouchableOpacity>
+                            <View style={styles.ratingContainer}>
+                                <Ionicons name="star" size={16} color="#FFC107" />
+                                <Text style={styles.ratingText}>{selectedLot.rating}</Text>
+                            </View>
                         </View>
                     </View>
 
@@ -647,8 +689,8 @@ export default function MapScreen({ navigation }) {
                             <Text style={styles.detailValue}>{selectedLot.distance}</Text>
                         </View>
                         <View style={styles.detailItem}>
-                            <Text style={styles.detailLabel}>Ucret Bilgisi</Text>
-                            <Text style={styles.detailValue}>{selectedLot.price}TL/saat</Text>
+                            <Text style={styles.detailLabel}>Ücret Bilgisi</Text>
+                            <Text style={styles.detailValue}>{selectedLot.price}₺/saat</Text>
                         </View>
                         <View style={styles.detailItem}>
                             <Text style={styles.detailLabel}>Özellikler</Text>
@@ -950,10 +992,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 16,
     },
+    cardHeaderRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    favoriteIconButton: {
+        padding: 4,
+        marginRight: 12,
+    },
     cardTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#000',
+        flex: 1,
     },
     ratingContainer: {
         flexDirection: 'row',
