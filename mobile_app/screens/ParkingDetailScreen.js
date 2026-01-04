@@ -97,7 +97,7 @@ export default function ParkingDetailScreen({ route, navigation }) {
                 <View style={styles.footerButtonsRow}>
                     <TouchableOpacity
                         style={styles.secondaryButton}
-                        onPress={() => navigation.navigate('Navigation')}
+                        onPress={() => navigation.navigate('Navigation', { lot })}
                     >
                         <Ionicons name="navigate-outline" size={20} color="#0066FF" />
                         <Text style={styles.secondaryButtonText}>Navigasyon</Text>
@@ -105,7 +105,7 @@ export default function ParkingDetailScreen({ route, navigation }) {
 
                     <TouchableOpacity
                         style={styles.secondaryButton}
-                        onPress={() => navigation.navigate('Navigation')}
+                        onPress={() => navigation.navigate('Navigation', { lot })}
                     >
                         <Ionicons name="map-outline" size={20} color="#0066FF" />
                         <Text style={styles.secondaryButtonText}>Yol Tarifi</Text>

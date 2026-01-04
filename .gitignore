@@ -105,3 +105,16 @@ dist/
 # Ignore nul files (Windows reserved name)
 nul
 **/nul
+
+# API Keys - Sensitive Data (DO NOT COMMIT)
+config/apiKeys.js
+**/apiKeys.js
+
+# Metro bundler
+.metro-health-check*
+
+# Lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+
+# Expo-specific
+*.expokit*

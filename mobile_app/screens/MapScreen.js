@@ -22,7 +22,13 @@ const { width } = Dimensions.get('window');
 import { getParkingLots } from '../api';
 import { mockParkingLots } from '../data/mockData';
 
-// ... imports remain the same
+// Helper function to get marker color based on occupancy
+const getMarkerColor = (occupancy) => {
+    const occ = occupancy || 0;
+    if (occ <= 40) return '#22C55E'; // Green
+    if (occ <= 70) return '#F59E0B'; // Orange
+    return '#EF4444'; // Red
+};
 
 export default function MapScreen({ navigation }) {
     const [location, setLocation] = useState(null);
@@ -510,17 +516,16 @@ export default function MapScreen({ navigation }) {
             >
                 {parkingLots.map((lot) => (
                     <Marker
-                        key={lot.id}
-                        coordinate={{ latitude: lot.latitude, longitude: lot.longitude }}
+                        key={`lot-${lot.id}`}
+                        coordinate={{
+                            latitude: lot.latitude,
+                            longitude: lot.longitude
+                        }}
+                        pinColor={getMarkerColor(lot.occupancy)}
+                        title={lot.name}
+                        description={`Doluluk: ${lot.occupancy}% | Fiyat: ${lot.price}₺/saat`}
                         onPress={() => setSelectedLot(lot)}
-                    >
-                        <View style={styles.markerContainer}>
-                            <View style={[styles.markerBubble, { backgroundColor: getMarkerColor(lot.occupancy) }]}>
-                                <Text style={styles.markerText}>{lot.occupancy}%</Text>
-                            </View>
-                            <Text style={[styles.markerLabel, { color: getMarkerColor(lot.occupancy) }]}>P</Text>
-                        </View>
-                    </Marker>
+                    />
                 ))}
             </MapView>
 
