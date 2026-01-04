@@ -44,7 +44,6 @@ export default function ProfileScreen({ navigation }) {
             items: [
                 { icon: 'person-outline', label: 'Kişisel Bilgiler', route: 'PersonalInfo', active: true },
                 { icon: 'car-outline', label: 'Araçlarım', route: 'Vehicles', active: true },
-                { icon: 'card-outline', label: 'Ödeme Yöntemleri', route: 'Payment', active: false },
             ]
         },
         {

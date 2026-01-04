@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { schedulePushNotification, scheduleReservationReminder, scheduleParkingExpiryWarning } from '../services/notificationService';
 
 const NOTIFICATIONS_KEY = 'notification_settings';
 
@@ -221,6 +222,24 @@ export default function NotificationsScreen({ navigation }) {
                     </Text>
                 </View>
 
+                {/* Test Notification Button */}
+                {settings.pushEnabled && (
+                    <TouchableOpacity
+                        style={styles.testButton}
+                        onPress={async () => {
+                            await schedulePushNotification({
+                                title: '🎉 Test Bildirimi',
+                                body: 'Push notification başarıyla çalışıyor!',
+                                data: { type: 'test' }
+                            });
+                            Alert.alert('Başarılı', 'Test bildirimi gönderildi!');
+                        }}
+                    >
+                        <Ionicons name="flask-outline" size={20} color="#0066FF" />
+                        <Text style={styles.testButtonText}>Test Bildirimi Gönder</Text>
+                    </TouchableOpacity>
+                )}
+
                 <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
@@ -339,5 +358,20 @@ const styles = StyleSheet.create({
         color: '#666',
         marginLeft: 12,
         lineHeight: 18,
+    },
+    testButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#E3F2FD',
+        padding: 16,
+        borderRadius: 12,
+        marginTop: 16,
+    },
+    testButtonText: {
+        color: '#0066FF',
+        fontWeight: '600',
+        marginLeft: 8,
+        fontSize: 15,
     },
 });
