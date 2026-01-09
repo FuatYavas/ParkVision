@@ -3,6 +3,7 @@ import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { LogBox } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { registerForPushNotificationsAsync, addNotificationReceivedListener, addNotificationResponseReceivedListener } from './services/notificationService';
@@ -22,6 +23,41 @@ import NotificationsScreen from './screens/NotificationsScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import AppearanceScreen from './screens/AppearanceScreen';
 import PlaceholderScreen from './screens/PlaceholderScreen';
+
+// Expo Go'da push notification uyarılarını gizle (LogBox için)
+LogBox.ignoreLogs([
+  'expo-notifications',
+  'Android Push notifications',
+  'functionality is not fully supported in Expo Go',
+]);
+
+// Console'daki ERROR ve WARN mesajlarını da filtrele
+const originalError = console.error;
+const originalWarn = console.warn;
+
+console.error = (...args) => {
+  const message = args.join(' ');
+  if (
+    message.includes('expo-notifications') ||
+    message.includes('Android Push notifications') ||
+    message.includes('functionality is not fully supported')
+  ) {
+    return; // Bu mesajları gösterme
+  }
+  originalError(...args);
+};
+
+console.warn = (...args) => {
+  const message = args.join(' ');
+  if (
+    message.includes('expo-notifications') ||
+    message.includes('functionality is not fully supported') ||
+    message.includes('development build')
+  ) {
+    return; // Bu mesajları gösterme
+  }
+  originalWarn(...args);
+};
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -175,18 +211,16 @@ export default function App() {
       .then(token => {
         if (token) {
           setExpoPushToken(token);
-          console.log('Expo Push Token:', token);
           // TODO: Token'ı backend'e gönder
         }
       })
       .catch(error => {
         // Expo Go veya emulator'da push notification token alınamaz - bu normal
-        console.log('Push notification token alınamadı (Expo Go/Emulator):', error.message);
       });
 
     // Bildirim geldiğinde listener
     notificationListener.current = addNotificationReceivedListener(notification => {
-      console.log('Bildirim alındı:', notification);
+      // Bildirim alındı
     });
 
     // Bildirime tıklandığında listener

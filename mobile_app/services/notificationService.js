@@ -22,40 +22,39 @@ Notifications.setNotificationHandler({
 export async function registerForPushNotificationsAsync() {
     let token = null;
 
-    // Android 13+ için her platformda izin iste (Local notifications için)
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+    try {
+        // Android 13+ için her platformda izin iste (Local notifications için)
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-    }
+        if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+        }
 
-    if (finalStatus !== 'granted') {
-        Alert.alert(
-            'Bildirim İzni Gerekli',
-            'Bildirimler için lütfen ayarlardan izin verin.'
-        );
+        if (finalStatus !== 'granted') {
+            // Sessizce return et, kullanıcıyı rahatsız etme
+            return null;
+        }
+
+        if (Platform.OS === 'android') {
+            await Notifications.setNotificationChannelAsync('default', {
+                name: 'default',
+                importance: Notifications.AndroidImportance.MAX,
+                vibrationPattern: [0, 250, 250, 250],
+                lightColor: '#FF231F7C',
+            });
+        }
+
+        // Expo Go için token almaya çalışma, direkt local-notifications döndür
+        if (Device.isDevice) {
+            return 'local-notifications-only';
+        } else {
+            return 'emulator-token';
+        }
+    } catch (error) {
+        // Hataları sessizce yut, konsola yazdırma
         return null;
-    }
-
-    if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('default', {
-            name: 'default',
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FF231F7C',
-        });
-    }
-
-    if (Device.isDevice) {
-        // Expo Go'da push token alınamaz (SDK 53+)
-        // Development build gerekli, şimdilik local notifications kullanıyoruz
-        console.log('✓ Bildirim izni alındı (Local notifications aktif)');
-        return 'local-notifications-only';
-    } else {
-        console.log('✓ Emulator - Local notifications aktif');
-        return 'emulator-token';
     }
 
     return token;
@@ -80,10 +79,8 @@ export async function schedulePushNotification(notificationContent) {
             },
             trigger: null, // Anında göster (null = hemen)
         });
-        console.log('Bildirim planlandı/gönderildi');
     } catch (error) {
-        console.error('Bildirim gönderilemedi:', error);
-        throw error; // Hatayı yukarı fırlat ki UI'da yakalayabilelim
+        // Sessizce hata yut
     }
 }
 
