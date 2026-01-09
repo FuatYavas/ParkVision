@@ -10,9 +10,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 import { getMyReservations, cancelReservation } from '../api';
 
 export default function MyReservationsScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -150,37 +152,37 @@ export default function MyReservationsScreen({ navigation }) {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Rezervasyonlarım</Text>
+            <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+                <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>Rezervasyonlarım</Text>
                 </View>
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#0066FF" />
-                    <Text style={styles.loadingText}>Rezervasyonlar yükleniyor...</Text>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Rezervasyonlar yükleniyor...</Text>
                 </View>
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Rezervasyonlarım</Text>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Rezervasyonlarım</Text>
                 <TouchableOpacity onPress={fetchReservations}>
-                    <Ionicons name="refresh-outline" size={24} color="#0066FF" />
+                    <Ionicons name="refresh-outline" size={24} color={colors.primary} />
                 </TouchableOpacity>
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 {activeReservations.length === 0 && pastReservations.length === 0 ? (
                     <View style={styles.emptyState}>
-                        <Ionicons name="calendar-outline" size={64} color="#ccc" />
-                        <Text style={styles.emptyTitle}>Henuz Rezervasyon Yok</Text>
-                        <Text style={styles.emptyText}>
+                        <Ionicons name="calendar-outline" size={64} color={colors.textSecondary} />
+                        <Text style={[styles.emptyTitle, { color: colors.text }]}>Henuz Rezervasyon Yok</Text>
+                        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
                             Haritadan bir otopark seçerek rezervasyon yapabilirsiniz.
                         </Text>
                         <TouchableOpacity
-                            style={styles.browseButton}
+                            style={[styles.browseButton, { backgroundColor: colors.primary }]}
                             onPress={() => navigation.navigate('Map')}
                         >
                             <Text style={styles.browseButtonText}>Otopark Ara</Text>
@@ -193,38 +195,38 @@ export default function MyReservationsScreen({ navigation }) {
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>AKTIF REZERVASYONLAR</Text>
                                 {activeReservations.map((reservation) => (
-                                    <View key={reservation.id} style={styles.reservationCard}>
+                                    <View key={reservation.id} style={[styles.reservationCard, { backgroundColor: colors.card, shadowColor: colors.text }]}>
                                         <View style={styles.cardHeader}>
                                             <View>
-                                                <Text style={styles.parkingName}>{reservation.parkingLotName}</Text>
-                                                <Text style={styles.spotNumber}>Park Yeri: {reservation.spotNumber}</Text>
+                                                <Text style={[styles.parkingName, { color: colors.text }]}>{reservation.parkingLotName}</Text>
+                                                <Text style={[styles.spotNumber, { color: colors.textSecondary }]}>Park Yeri: {reservation.spotNumber}</Text>
                                             </View>
-                                            <View style={styles.statusBadge}>
+                                            <View style={[styles.statusBadge, isDark && { backgroundColor: 'rgba(76, 175, 80, 0.2)' }]}>
                                                 <View style={styles.statusDot} />
                                                 <Text style={styles.statusText}>Aktif</Text>
                                             </View>
                                         </View>
 
-                                        <View style={styles.timerContainer}>
-                                            <Ionicons name="time-outline" size={20} color="#0066FF" />
-                                            <Text style={styles.timerLabel}>Kalan Sure:</Text>
-                                            <Text style={styles.timerValue}>{getTimeRemaining(reservation.endTime)}</Text>
+                                        <View style={[styles.timerContainer, { backgroundColor: isDark ? '#1A2733' : '#E3F2FD' }]}>
+                                            <Ionicons name="time-outline" size={20} color={colors.primary} />
+                                            <Text style={[styles.timerLabel, { color: colors.textSecondary }]}>Kalan Sure:</Text>
+                                            <Text style={[styles.timerValue, { color: colors.primary }]}>{getTimeRemaining(reservation.endTime)}</Text>
                                         </View>
 
                                         <View style={styles.infoRow}>
                                             <View style={styles.infoItem}>
-                                                <Text style={styles.infoLabel}>Ucret</Text>
-                                                <Text style={styles.infoValue}>{reservation.price}TL/saat</Text>
+                                                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Ucret</Text>
+                                                <Text style={[styles.infoValue, { color: colors.text }]}>{reservation.price}TL/saat</Text>
                                             </View>
                                             <View style={styles.infoItem}>
-                                                <Text style={styles.infoLabel}>Baslangic</Text>
-                                                <Text style={styles.infoValue}>
+                                                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Baslangic</Text>
+                                                <Text style={[styles.infoValue, { color: colors.text }]}>
                                                     {new Date(reservation.startTime).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                                                 </Text>
                                             </View>
                                             <View style={styles.infoItem}>
-                                                <Text style={styles.infoLabel}>Bitis</Text>
-                                                <Text style={styles.infoValue}>
+                                                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Bitis</Text>
+                                                <Text style={[styles.infoValue, { color: colors.text }]}>
                                                     {new Date(reservation.endTime).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                                                 </Text>
                                             </View>
@@ -232,18 +234,18 @@ export default function MyReservationsScreen({ navigation }) {
 
                                         <View style={styles.cardActions}>
                                             <TouchableOpacity
-                                                style={styles.mapButton}
+                                                style={[styles.mapButton, { backgroundColor: isDark ? '#1A2733' : '#E3F2FD' }]}
                                                 onPress={() => handleViewOnMap(reservation)}
                                             >
-                                                <Ionicons name="map-outline" size={18} color="#0066FF" />
-                                                <Text style={styles.mapButtonText}>Haritada Gor</Text>
+                                                <Ionicons name="map-outline" size={18} color={colors.primary} />
+                                                <Text style={[styles.mapButtonText, { color: colors.primary }]}>Haritada Gor</Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity
-                                                style={styles.cancelButton}
+                                                style={[styles.cancelButton, { backgroundColor: isDark ? '#3E2723' : '#FFEBEE' }]}
                                                 onPress={() => handleCancelReservation(reservation.id)}
                                             >
-                                                <Ionicons name="close-circle-outline" size={18} color="#F44336" />
-                                                <Text style={styles.cancelButtonText}>Iptal Et</Text>
+                                                <Ionicons name="close-circle-outline" size={18} color={colors.danger} />
+                                                <Text style={[styles.cancelButtonText, { color: colors.danger }]}>Iptal Et</Text>
                                             </TouchableOpacity>
                                         </View>
                                     </View>
@@ -256,10 +258,10 @@ export default function MyReservationsScreen({ navigation }) {
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>GECMIS REZERVASYONLAR</Text>
                                 {pastReservations.map((reservation) => (
-                                    <View key={reservation.id} style={[styles.reservationCard, styles.pastCard]}>
-                                        <Text style={styles.parkingName}>{reservation.parkingLotName}</Text>
-                                        <Text style={styles.spotNumber}>Park Yeri: {reservation.spotNumber}</Text>
-                                        <Text style={styles.pastDate}>
+                                    <View key={reservation.id} style={[styles.reservationCard, styles.pastCard, { backgroundColor: colors.card }]}>
+                                        <Text style={[styles.parkingName, { color: colors.text }]}>{reservation.parkingLotName}</Text>
+                                        <Text style={[styles.spotNumber, { color: colors.textSecondary }]}>Park Yeri: {reservation.spotNumber}</Text>
+                                        <Text style={[styles.pastDate, { color: colors.textSecondary }]}>
                                             {new Date(reservation.startTime).toLocaleDateString('tr-TR')}
                                         </Text>
                                     </View>

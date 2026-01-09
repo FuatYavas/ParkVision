@@ -11,9 +11,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 import { login } from '../api';
 
 export default function LoginScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -45,36 +47,38 @@ export default function LoginScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={styles.content}>
                 {/* Logo */}
                 <View style={styles.logoContainer}>
-                    <View style={styles.logoBox}>
+                    <View style={[styles.logoBox, { backgroundColor: colors.primary }]}>
                         <Text style={styles.logoText}>P</Text>
                     </View>
                 </View>
 
                 {/* Header */}
-                <Text style={styles.title}>Giriş Yap</Text>
-                <Text style={styles.subtitle}>Devam etmek için giriş yapın.</Text>
+                <Text style={[styles.title, { color: colors.text }]}>Giriş Yap</Text>
+                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Devam etmek için giriş yapın.</Text>
 
                 {/* Form */}
                 <View style={styles.form}>
-                    <Text style={styles.label}>Email</Text>
+                    <Text style={[styles.label, { color: colors.text }]}>Email</Text>
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
                         placeholder="email@adresiniz.com"
+                        placeholderTextColor={colors.textSecondary}
                         value={email}
                         onChangeText={setEmail}
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
 
-                    <Text style={styles.label}>Şifre</Text>
-                    <View style={styles.passwordContainer}>
+                    <Text style={[styles.label, { color: colors.text }]}>Şifre</Text>
+                    <View style={[styles.passwordContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <TextInput
-                            style={styles.passwordInput}
+                            style={[styles.passwordInput, { color: colors.text }]}
                             placeholder="Şifrenizi girin"
+                            placeholderTextColor={colors.textSecondary}
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry={!showPassword}
@@ -83,36 +87,36 @@ export default function LoginScreen({ navigation }) {
                             <Ionicons
                                 name={showPassword ? "eye-off-outline" : "eye-outline"}
                                 size={24}
-                                color="#666"
+                                color={colors.textSecondary}
                             />
                         </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity style={styles.forgotPassword}>
-                        <Text style={styles.forgotPasswordText}>Şifremi Unuttum?</Text>
+                        <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>Şifremi Unuttum?</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                    <TouchableOpacity style={[styles.loginButton, { backgroundColor: colors.primary }]} onPress={handleLogin}>
                         <Text style={styles.loginButtonText}>Giriş Yap</Text>
                     </TouchableOpacity>
 
                     <View style={styles.dividerContainer}>
-                        <View style={styles.dividerLine} />
-                        <Text style={styles.dividerText}>veya</Text>
-                        <View style={styles.dividerLine} />
+                        <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+                        <Text style={[styles.dividerText, { color: colors.textSecondary }]}>veya</Text>
+                        <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
                     </View>
 
-                    <TouchableOpacity style={styles.googleButton}>
+                    <TouchableOpacity style={[styles.googleButton, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <Ionicons name="logo-google" size={24} color="#DB4437" style={styles.googleIcon} />
-                        <Text style={styles.googleButtonText}>Google ile giriş</Text>
+                        <Text style={[styles.googleButtonText, { color: colors.text }]}>Google ile giriş</Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* Footer */}
                 <View style={styles.footer}>
-                    <Text style={styles.footerText}>Hesabın yok mu? </Text>
+                    <Text style={[styles.footerText, { color: colors.textSecondary }]}>Hesabın yok mu? </Text>
                     <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                        <Text style={styles.registerText}>Kayıt ol</Text>
+                        <Text style={[styles.registerText, { color: colors.primary }]}>Kayıt ol</Text>
                     </TouchableOpacity>
                 </View>
             </View>

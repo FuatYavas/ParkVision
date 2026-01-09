@@ -14,9 +14,10 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 
-import { getCurrentUser } from '../api';
+import { useTheme } from '../context/ThemeContext';
 
 export default function ProfileScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [user, setUser] = useState({
         full_name: 'Loading...',
         email: 'Loading...'
@@ -126,6 +127,8 @@ export default function ProfileScreen({ navigation }) {
         }
     };
 
+
+
     const loadSettings = async () => {
         try {
             const theme = await AsyncStorage.getItem('app_theme') || 'system';
@@ -135,6 +138,15 @@ export default function ProfileScreen({ navigation }) {
             console.log('Failed to load settings:', error);
         }
     };
+
+    // Listen to focus to reload settings (in case changed in AppearanceScreen via context)
+    // Note: Since we use context, the UI updates automatically, but we might want to refresh the text label
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            loadSettings();
+        });
+        return unsubscribe;
+    }, [navigation]);
 
     const getThemeLabel = (value) => {
         switch (value) {
@@ -207,9 +219,9 @@ export default function ProfileScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Profil</Text>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.background }]}>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Profil</Text>
                 <TouchableOpacity onPress={() => navigation.navigate('PersonalInfo')}>
                     <Text style={styles.editButton}>Düzenle</Text>
                 </TouchableOpacity>
@@ -227,55 +239,64 @@ export default function ProfileScreen({ navigation }) {
                             <Ionicons name="camera" size={20} color="white" />
                         </View>
                     </TouchableOpacity>
-                    <Text style={styles.name}>{user.full_name}</Text>
-                    <Text style={styles.email}>{user.email}</Text>
+                    <Text style={[styles.name, { color: colors.text }]}>{user.full_name}</Text>
+                    <Text style={[styles.email, { color: colors.textSecondary }]}>{user.email}</Text>
                 </View>
 
                 {/* Quick Actions */}
                 <TouchableOpacity
-                    style={styles.searchParkingButton}
+                    style={[styles.searchParkingButton, { backgroundColor: colors.cardHighlight }]}
                     onPress={() => navigation.navigate('Map')}
                 >
-                    <View style={styles.searchParkingIcon}>
-                        <Ionicons name="search" size={24} color="#0066FF" />
+                    <View style={[styles.searchParkingIcon, { backgroundColor: colors.card }]}>
+                        <Ionicons name="search" size={24} color={colors.primary} />
                     </View>
                     <View style={styles.searchParkingTextContainer}>
-                        <Text style={styles.searchParkingTitle}>Otopark Ara</Text>
-                        <Text style={styles.searchParkingSubtitle}>Yakınındaki otoparkları keşfet</Text>
+                        <Text style={[styles.searchParkingTitle, { color: colors.primary }]}>Otopark Ara</Text>
+                        <Text style={[styles.searchParkingSubtitle, { color: colors.textSecondary }]}>Yakınındaki otoparkları keşfet</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={24} color="#0066FF" />
+                    <Ionicons name="chevron-forward" size={24} color={colors.primary} />
                 </TouchableOpacity>
 
                 {/* Menu Items */}
                 {menuItems.map((section, index) => (
                     <View key={index} style={styles.section}>
                         <Text style={styles.sectionTitle}>{section.title}</Text>
-                        <View style={styles.sectionContent}>
+                        <View style={[styles.sectionContent, { backgroundColor: colors.card }]}>
                             {section.items.map((item, itemIndex) => (
                                 <TouchableOpacity
                                     key={itemIndex}
                                     style={[
                                         styles.menuItem,
                                         itemIndex === section.items.length - 1 && styles.lastMenuItem,
-                                        !item.active && styles.menuItemDisabled
+                                        !item.active && styles.menuItemDisabled,
+                                        { borderBottomColor: colors.divider }
                                     ]}
                                     onPress={() => handleMenuItemPress(item)}
                                 >
                                     <View style={styles.menuItemLeft}>
-                                        <View style={[styles.iconBg, !item.active && styles.iconBgDisabled]}>
+                                        <View style={[
+                                            styles.iconBg,
+                                            !item.active && styles.iconBgDisabled,
+                                            { backgroundColor: item.active ? colors.iconBg : colors.divider }
+                                        ]}>
                                             <Ionicons
                                                 name={item.icon}
                                                 size={20}
-                                                color={item.active ? "#0066FF" : "#999"}
+                                                color={item.active ? colors.primary : colors.textSecondary}
                                             />
                                         </View>
-                                        <Text style={[styles.menuItemLabel, !item.active && styles.menuItemLabelDisabled]}>
+                                        <Text style={[
+                                            styles.menuItemLabel,
+                                            !item.active && styles.menuItemLabelDisabled,
+                                            { color: item.active ? colors.text : colors.textSecondary }
+                                        ]}>
                                             {item.label}
                                         </Text>
                                     </View>
                                     <View style={styles.menuItemRight}>
-                                        {item.value && <Text style={styles.menuItemValue}>{item.value}</Text>}
-                                        <Ionicons name="chevron-forward" size={20} color="#999" />
+                                        {item.value && <Text style={[styles.menuItemValue, { color: colors.textSecondary }]}>{item.value}</Text>}
+                                        <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
                                     </View>
                                 </TouchableOpacity>
                             ))}
@@ -283,8 +304,8 @@ export default function ProfileScreen({ navigation }) {
                     </View>
                 ))}
 
-                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                    <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
+                <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.dangerBg }]} onPress={handleLogout}>
+                    <Text style={[styles.logoutButtonText, { color: colors.danger }]}>Çıkış Yap</Text>
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>

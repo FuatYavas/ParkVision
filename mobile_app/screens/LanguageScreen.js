@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../context/ThemeContext';
 
 const LANGUAGE_KEY = 'app_language';
 
@@ -18,6 +19,7 @@ const languageOptions = [
 ];
 
 export default function LanguageScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [language, setLanguage] = useState('tr');
 
     useEffect(() => {
@@ -47,42 +49,43 @@ export default function LanguageScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color="#000" />
+                    <Ionicons name="chevron-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Dil</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Dil</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <View style={styles.content}>
                 <Text style={styles.sectionTitle}>DİL SEÇİNİ</Text>
-                <View style={styles.optionsContainer}>
+                <View style={[styles.optionsContainer, { backgroundColor: colors.card }]}>
                     {languageOptions.map((option, index) => (
                         <TouchableOpacity
                             key={option.value}
                             style={[
                                 styles.optionItem,
+                                { borderBottomColor: colors.border },
                                 index === languageOptions.length - 1 && styles.lastOptionItem
                             ]}
                             onPress={() => handleSelect(option.value)}
                         >
                             <View style={styles.optionLeft}>
                                 <Text style={styles.flag}>{option.flag}</Text>
-                                <Text style={styles.optionLabel}>{option.label}</Text>
+                                <Text style={[styles.optionLabel, { color: colors.text }]}>{option.label}</Text>
                             </View>
                             {language === option.value && (
-                                <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
+                                <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
                             )}
                         </TouchableOpacity>
                     ))}
                 </View>
 
                 {/* Info Note */}
-                <View style={styles.infoCard}>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" />
-                    <Text style={styles.infoText}>
+                <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+                    <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} />
+                    <Text style={[styles.infoText, { color: colors.textSecondary }]}>
                         Dil değişikliği uygulamanın bazı bölümlerinde hemen etkili olmayabilir. Tam değişiklik için uygulamayı yeniden başlatmanız gerekebilir.
                     </Text>
                 </View>

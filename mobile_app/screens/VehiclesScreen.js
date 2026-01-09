@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-
+import { useTheme } from '../context/ThemeContext';
 import { getMyVehicles, createVehicle, updateVehicle, deleteVehicle } from '../api';
 
 const VEHICLE_TYPES = [
@@ -24,6 +24,7 @@ const VEHICLE_TYPES = [
 ];
 
 export default function VehiclesScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [loading, setLoading] = useState(true);
     const [vehicles, setVehicles] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
@@ -129,43 +130,43 @@ export default function VehiclesScreen({ navigation }) {
     };
 
     const VehicleCard = ({ vehicle }) => (
-        <View style={styles.vehicleCard}>
-            <View style={styles.vehicleIconContainer}>
-                <Ionicons name="car" size={32} color="#0066FF" />
+        <View style={[styles.vehicleCard, { backgroundColor: colors.card, shadowColor: colors.text }]}>
+            <View style={[styles.vehicleIconContainer, { backgroundColor: colors.iconBg }]}>
+                <Ionicons name="car" size={32} color={colors.primary} />
             </View>
             <View style={styles.vehicleInfo}>
-                <Text style={styles.vehiclePlate}>{vehicle.plate_number}</Text>
-                <Text style={styles.vehicleDetails}>
+                <Text style={[styles.vehiclePlate, { color: colors.text }]}>{vehicle.plate_number}</Text>
+                <Text style={[styles.vehicleDetails, { color: colors.textSecondary }]}>
                     {vehicle.brand} {vehicle.model}
                 </Text>
-                <Text style={styles.vehicleColor}>{vehicle.color} • {vehicle.vehicle_type}</Text>
+                <Text style={[styles.vehicleColor, { color: colors.textSecondary }]}>{vehicle.color} • {vehicle.vehicle_type}</Text>
             </View>
             <View style={styles.vehicleActions}>
                 <TouchableOpacity
-                    style={styles.actionButton}
+                    style={[styles.actionButton, { backgroundColor: isDark ? '#333' : '#F5F5F5', borderRadius: 8 }]}
                     onPress={() => openEditModal(vehicle)}
                 >
-                    <Ionicons name="create-outline" size={20} color="#0066FF" />
+                    <Ionicons name="create-outline" size={20} color={colors.primary} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={styles.actionButton}
+                    style={[styles.actionButton, { backgroundColor: isDark ? '#3E2723' : '#FFEBEE', borderRadius: 8 }]}
                     onPress={() => handleDeleteVehicle(vehicle)}
                 >
-                    <Ionicons name="trash-outline" size={20} color="#F44336" />
+                    <Ionicons name="trash-outline" size={20} color={colors.danger} />
                 </TouchableOpacity>
             </View>
         </View>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Araçlarım</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Araçlarım</Text>
                 <TouchableOpacity onPress={openAddModal}>
-                    <Ionicons name="add-circle" size={28} color="#0066FF" />
+                    <Ionicons name="add-circle" size={28} color={colors.primary} />
                 </TouchableOpacity>
             </View>
 
@@ -196,78 +197,80 @@ export default function VehiclesScreen({ navigation }) {
                 transparent={true}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
+                <View style={[styles.modalOverlay, isDark && { backgroundColor: 'rgba(0,0,0,0.8)' }]}>
+                    <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>
                                 {editingVehicle ? 'Aracı Düzenle' : 'Araç Ekle'}
                             </Text>
                             <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <Ionicons name="close" size={24} color="#000" />
+                                <Ionicons name="close" size={24} color={colors.text} />
                             </TouchableOpacity>
                         </View>
 
                         <ScrollView>
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Plaka</Text>
+                                <Text style={[styles.label, { color: colors.textSecondary }]}>Plaka</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
                                     value={plateNumber}
                                     onChangeText={setPlateNumber}
                                     placeholder="örn: 34 ABC 123"
-                                    placeholderTextColor="#999"
+                                    placeholderTextColor={colors.textSecondary}
                                     autoCapitalize="characters"
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Marka</Text>
+                                <Text style={[styles.label, { color: colors.textSecondary }]}>Marka</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
                                     value={brand}
                                     onChangeText={setBrand}
                                     placeholder="örn: Toyota"
-                                    placeholderTextColor="#999"
+                                    placeholderTextColor={colors.textSecondary}
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Model</Text>
+                                <Text style={[styles.label, { color: colors.textSecondary }]}>Model</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
                                     value={model}
                                     onChangeText={setModel}
                                     placeholder="örn: Corolla"
-                                    placeholderTextColor="#999"
+                                    placeholderTextColor={colors.textSecondary}
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Renk</Text>
+                                <Text style={[styles.label, { color: colors.textSecondary }]}>Renk</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
                                     value={color}
                                     onChangeText={setColor}
                                     placeholder="örn: Beyaz"
-                                    placeholderTextColor="#999"
+                                    placeholderTextColor={colors.textSecondary}
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Araç Tipi</Text>
+                                <Text style={[styles.label, { color: colors.textSecondary }]}>Araç Tipi</Text>
                                 <View style={styles.typeButtons}>
                                     {VEHICLE_TYPES.map((type) => (
                                         <TouchableOpacity
                                             key={type.value}
                                             style={[
                                                 styles.typeButton,
-                                                vehicleType === type.value && styles.typeButtonActive
+                                                { backgroundColor: colors.background, borderColor: colors.border },
+                                                vehicleType === type.value && { backgroundColor: colors.primary, borderColor: colors.primary }
                                             ]}
                                             onPress={() => setVehicleType(type.value)}
                                         >
                                             <Text
                                                 style={[
                                                     styles.typeButtonText,
+                                                    { color: colors.textSecondary },
                                                     vehicleType === type.value && styles.typeButtonTextActive
                                                 ]}
                                             >
@@ -280,7 +283,7 @@ export default function VehiclesScreen({ navigation }) {
                         </ScrollView>
 
                         <TouchableOpacity
-                            style={styles.saveButton}
+                            style={[styles.saveButton, { backgroundColor: colors.primary }]}
                             onPress={handleSaveVehicle}
                         >
                             <Text style={styles.saveButtonText}>

@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 import { register } from '../api';
 
 export default function RegisterScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -51,37 +53,39 @@ export default function RegisterScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
                 style={styles.keyboardView}
             >
                 <ScrollView contentContainerStyle={styles.scrollContent}>
                     <View style={styles.header}>
-                        <View style={styles.logoContainer}>
+                        <View style={[styles.logoContainer, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
                             <Text style={styles.logoText}>P</Text>
                         </View>
-                        <Text style={styles.title}>Hesap Oluştur</Text>
-                        <Text style={styles.subtitle}>ParkVision dünyasına katılın</Text>
+                        <Text style={[styles.title, { color: colors.text }]}>Hesap Oluştur</Text>
+                        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>ParkVision dünyasına katılın</Text>
                     </View>
 
                     <View style={styles.form}>
-                        <View style={styles.inputContainer}>
-                            <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                        <View style={[styles.inputContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                            <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { color: colors.text }]}
                                 placeholder="Ad Soyad"
+                                placeholderTextColor={colors.textSecondary}
                                 value={fullName}
                                 onChangeText={setFullName}
                                 autoCapitalize="words"
                             />
                         </View>
 
-                        <View style={styles.inputContainer}>
-                            <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+                        <View style={[styles.inputContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                            <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { color: colors.text }]}
                                 placeholder="E-posta"
+                                placeholderTextColor={colors.textSecondary}
                                 value={email}
                                 onChangeText={setEmail}
                                 keyboardType="email-address"
@@ -89,36 +93,42 @@ export default function RegisterScreen({ navigation }) {
                             />
                         </View>
 
-                        <View style={styles.inputContainer}>
-                            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+                        <View style={[styles.inputContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                            <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { color: colors.text }]}
                                 placeholder="Şifre"
+                                placeholderTextColor={colors.textSecondary}
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry={!showPassword}
                             />
                             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#666" />
+                                <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={20} color={colors.textSecondary} />
                             </TouchableOpacity>
                         </View>
 
-                        <View style={styles.inputContainer}>
-                            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+                        <View style={[styles.inputContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                            <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { color: colors.text }]}
                                 placeholder="Şifre Tekrar"
+                                placeholderTextColor={colors.textSecondary}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
                                 secureTextEntry={!showConfirmPassword}
                             />
                             <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                <Ionicons name={showConfirmPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#666" />
+                                <Ionicons name={showConfirmPassword ? "eye-outline" : "eye-off-outline"} size={20} color={colors.textSecondary} />
                             </TouchableOpacity>
                         </View>
 
                         <TouchableOpacity
-                            style={[styles.registerButton, loading && styles.disabledButton]}
+                            style={[
+                                styles.registerButton,
+                                { backgroundColor: colors.primary, shadowColor: colors.primary },
+                                loading && styles.disabledButton
+                            ]}
                             onPress={handleRegister}
                             disabled={loading}
                         >
@@ -130,9 +140,9 @@ export default function RegisterScreen({ navigation }) {
                         </TouchableOpacity>
 
                         <View style={styles.loginContainer}>
-                            <Text style={styles.loginText}>Zaten hesabınız var mı? </Text>
+                            <Text style={[styles.loginText, { color: colors.textSecondary }]}>Zaten hesabınız var mı? </Text>
                             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                                <Text style={styles.loginLink}>Giriş Yap</Text>
+                                <Text style={[styles.loginLink, { color: colors.primary }]}>Giriş Yap</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

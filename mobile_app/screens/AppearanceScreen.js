@@ -8,9 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const THEME_KEY = 'app_theme';
+import { useTheme } from '../context/ThemeContext';
 
 const themeOptions = [
     { label: 'Sistem', value: 'system', icon: 'phone-portrait-outline' },
@@ -19,64 +17,43 @@ const themeOptions = [
 ];
 
 export default function AppearanceScreen({ navigation }) {
-    const [theme, setTheme] = useState('system');
+    const { themeType, setTheme, colors, isDark } = useTheme();
 
-    useEffect(() => {
-        loadSettings();
-    }, []);
-
-    const loadSettings = async () => {
-        try {
-            const savedTheme = await AsyncStorage.getItem(THEME_KEY);
-            if (savedTheme) {
-                setTheme(savedTheme);
-            }
-        } catch (error) {
-            console.log('Failed to load theme settings:', error);
-        }
-    };
-
-    const handleSelect = async (value) => {
-        try {
-            setTheme(value);
-            await AsyncStorage.setItem(THEME_KEY, value);
-            // In a real app with theming context, you would update the context here
-        } catch (error) {
-            console.log('Failed to save theme settings:', error);
-            Alert.alert('Hata', 'Ayarlar kaydedilemedi.');
-        }
+    const handleSelect = (value) => {
+        setTheme(value);
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color="#000" />
+                    <Ionicons name="chevron-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Görünüm</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Görünüm</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <View style={styles.content}>
                 <Text style={styles.sectionTitle}>TEMA SEÇİNİ</Text>
-                <View style={styles.optionsContainer}>
+                <View style={[styles.optionsContainer, { backgroundColor: colors.card }]}>
                     {themeOptions.map((option, index) => (
                         <TouchableOpacity
                             key={option.value}
                             style={[
                                 styles.optionItem,
-                                index === themeOptions.length - 1 && styles.lastOptionItem
+                                index === themeOptions.length - 1 && styles.lastOptionItem,
+                                { borderBottomColor: colors.border }
                             ]}
                             onPress={() => handleSelect(option.value)}
                         >
                             <View style={styles.optionLeft}>
-                                <View style={styles.iconContainer}>
-                                    <Ionicons name={option.icon} size={22} color="#666" />
+                                <View style={[styles.iconContainer, { backgroundColor: colors.iconBg }]}>
+                                    <Ionicons name={option.icon} size={22} color={colors.textSecondary} />
                                 </View>
-                                <Text style={styles.optionLabel}>{option.label}</Text>
+                                <Text style={[styles.optionLabel, { color: colors.text }]}>{option.label}</Text>
                             </View>
-                            {theme === option.value && (
-                                <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
+                            {themeType === option.value && (
+                                <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
                             )}
                         </TouchableOpacity>
                     ))}

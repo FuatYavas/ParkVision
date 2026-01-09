@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../context/ThemeContext';
 import { schedulePushNotification, scheduleReservationReminder, scheduleParkingExpiryWarning } from '../services/notificationService';
 
 const NOTIFICATIONS_KEY = 'notification_settings';
@@ -27,6 +28,7 @@ const defaultSettings = {
 };
 
 export default function NotificationsScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [settings, setSettings] = useState(defaultSettings);
     const [loading, setLoading] = useState(true);
 
@@ -145,27 +147,35 @@ export default function NotificationsScreen({ navigation }) {
         return (
             <View
                 key={item.key}
-                style={[styles.settingItem, isDisabled && styles.settingItemDisabled]}
+                style={[
+                    styles.settingItem,
+                    { borderBottomColor: colors.border },
+                    isDisabled && styles.settingItemDisabled
+                ]}
             >
-                <View style={[styles.iconContainer, item.isMain && styles.iconContainerMain]}>
+                <View style={[
+                    styles.iconContainer,
+                    { backgroundColor: isDark ? '#333' : '#F5F5F5' },
+                    item.isMain && { backgroundColor: colors.iconBg }
+                ]}>
                     <Ionicons
                         name={item.icon}
                         size={22}
-                        color={item.isMain ? '#0066FF' : (isDisabled ? '#CCC' : '#666')}
+                        color={item.isMain ? colors.primary : (isDisabled ? colors.textSecondary : colors.textSecondary)}
                     />
                 </View>
                 <View style={styles.settingContent}>
-                    <Text style={[styles.settingLabel, isDisabled && styles.textDisabled]}>
+                    <Text style={[styles.settingLabel, { color: colors.text }, isDisabled && { color: colors.textSecondary }]}>
                         {item.label}
                     </Text>
-                    <Text style={[styles.settingDescription, isDisabled && styles.textDisabled]}>
+                    <Text style={[styles.settingDescription, { color: colors.textSecondary }, isDisabled && { color: colors.textSecondary }]}>
                         {item.description}
                     </Text>
                 </View>
                 <Switch
                     value={settings[item.key]}
                     onValueChange={() => toggleSetting(item.key)}
-                    trackColor={{ false: '#E0E0E0', true: '#81C784' }}
+                    trackColor={{ false: isDark ? '#444' : '#E0E0E0', true: '#81C784' }}
                     thumbColor={settings[item.key] ? '#4CAF50' : '#f4f3f4'}
                     disabled={isDisabled}
                 />
@@ -174,12 +184,12 @@ export default function NotificationsScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color="#000" />
+                    <Ionicons name="chevron-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Bildirim Ayarları</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Bildirim Ayarları</Text>
                 <View style={{ width: 24 }} />
             </View>
 
@@ -187,7 +197,9 @@ export default function NotificationsScreen({ navigation }) {
                 {/* Status Banner */}
                 <View style={[
                     styles.statusBanner,
-                    settings.pushEnabled ? styles.statusBannerEnabled : styles.statusBannerDisabled
+                    settings.pushEnabled
+                        ? (isDark ? { backgroundColor: 'rgba(76, 175, 80, 0.15)' } : styles.statusBannerEnabled)
+                        : (isDark ? { backgroundColor: 'rgba(244, 67, 54, 0.15)' } : styles.statusBannerDisabled)
                 ]}>
                     <Ionicons
                         name={settings.pushEnabled ? "notifications" : "notifications-off"}
@@ -207,16 +219,16 @@ export default function NotificationsScreen({ navigation }) {
                 {notificationCategories.map((category) => (
                     <View key={category.title} style={styles.section}>
                         <Text style={styles.sectionTitle}>{category.title}</Text>
-                        <View style={styles.sectionContent}>
+                        <View style={[styles.sectionContent, { backgroundColor: colors.card }]}>
                             {category.items.map(renderSettingItem)}
                         </View>
                     </View>
                 ))}
 
                 {/* Info Card */}
-                <View style={styles.infoCard}>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" />
-                    <Text style={styles.infoText}>
+                <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+                    <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} />
+                    <Text style={[styles.infoText, { color: colors.textSecondary }]}>
                         Bildirim ayarlarını değiştirmek için cihazınızın sistem ayarlarından da
                         uygulama bildirimlerini yönetebilirsiniz.
                     </Text>
@@ -225,7 +237,7 @@ export default function NotificationsScreen({ navigation }) {
                 {/* Test Notification Button */}
                 {settings.pushEnabled && (
                     <TouchableOpacity
-                        style={styles.testButton}
+                        style={[styles.testButton, { backgroundColor: colors.iconBg }]}
                         onPress={async () => {
                             try {
                                 await schedulePushNotification({
@@ -239,8 +251,8 @@ export default function NotificationsScreen({ navigation }) {
                             }
                         }}
                     >
-                        <Ionicons name="flask-outline" size={20} color="#0066FF" />
-                        <Text style={styles.testButtonText}>Test Bildirimi Gönder</Text>
+                        <Ionicons name="flask-outline" size={20} color={colors.primary} />
+                        <Text style={[styles.testButtonText, { color: colors.primary }]}>Test Bildirimi Gönder</Text>
                     </TouchableOpacity>
                 )}
 

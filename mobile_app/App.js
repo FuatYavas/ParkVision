@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { registerForPushNotificationsAsync, addNotificationReceivedListener, addNotificationResponseReceivedListener } from './services/notificationService';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
@@ -79,44 +80,11 @@ function MainTabs() {
   );
 }
 
-export default function App() {
-  const [expoPushToken, setExpoPushToken] = useState('');
-  const notificationListener = useRef();
-  const responseListener = useRef();
-
-  useEffect(() => {
-    // Push notification token'ı al
-    registerForPushNotificationsAsync().then(token => {
-      if (token) {
-        setExpoPushToken(token);
-        console.log('Expo Push Token:', token);
-        // TODO: Token'ı backend'e gönder
-      }
-    });
-
-    // Bildirim geldiğinde listener
-    notificationListener.current = addNotificationReceivedListener(notification => {
-      console.log('Bildirim alındı:', notification);
-    });
-
-    // Bildirime tıklandığında listener
-    responseListener.current = addNotificationResponseReceivedListener(response => {
-      console.log('Bildirime tıklandı:', response);
-      // TODO: Notification data'ya göre navigation yap
-    });
-
-    return () => {
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
-    };
-  }, []);
+const AppContent = () => {
+  const { isDark } = useTheme();
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={isDark ? DarkTheme : DefaultTheme}>
       <Stack.Navigator initialRouteName="Onboarding">
         <Stack.Screen
           name="Onboarding"
@@ -199,5 +167,48 @@ export default function App() {
         />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+};
+
+export default function App() {
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const notificationListener = useRef();
+  const responseListener = useRef();
+
+  useEffect(() => {
+    // Push notification token'ı al
+    registerForPushNotificationsAsync().then(token => {
+      if (token) {
+        setExpoPushToken(token);
+        console.log('Expo Push Token:', token);
+        // TODO: Token'ı backend'e gönder
+      }
+    });
+
+    // Bildirim geldiğinde listener
+    notificationListener.current = addNotificationReceivedListener(notification => {
+      console.log('Bildirim alındı:', notification);
+    });
+
+    // Bildirime tıklandığında listener
+    responseListener.current = addNotificationResponseReceivedListener(response => {
+      console.log('Bildirime tıklandı:', response);
+      // TODO: Notification data'ya göre navigation yap
+    });
+
+    return () => {
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, []);
+
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
