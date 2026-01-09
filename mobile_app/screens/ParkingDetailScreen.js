@@ -33,10 +33,11 @@ export default function ParkingDetailScreen({ route, navigation }) {
     // Each parking lot has its own fixed CV detection image based on ID
     const cvImageIndex = (lot.id - 1) % cvDetectionImages.length;
 
-    // Mock detection stats (in real app, these come from CV module)
-    const emptyCount = 5;
-    const occupiedCount = 7;
-    const occupancyRate = Math.round((occupiedCount / (emptyCount + occupiedCount)) * 100);
+    // Get real parking stats from lot data
+    const emptyCount = lot.empty_spots || lot.capacity - lot.current_occupancy || 20;
+    const occupiedCount = lot.current_occupancy || 5;
+    const totalSpots = lot.capacity || emptyCount + occupiedCount;
+    const occupancyRate = Math.round((occupiedCount / totalSpots) * 100);
 
     // Simulate periodic updates (only timestamp, image stays same)
     useEffect(() => {

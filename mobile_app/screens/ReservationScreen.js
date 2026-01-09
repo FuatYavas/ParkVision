@@ -52,7 +52,9 @@ export default function ReservationScreen({ route, navigation }) {
             // API mevcut değil, mock data kullanılıyor (normal davranış)
             console.log('Using mock parking spots data');
             // Fallback to mock data with random occupancy
-            const mockSpots = generateMockSpots(lotId, 20);
+            // Merkez Park için 25 park yeri (5 dolu, 20 boş)
+            const spotsCount = lotId === 2 ? 25 : 20;
+            const mockSpots = generateMockSpots(lotId, spotsCount);
             const formattedSpots = mockSpots.map(spot => ({
                 id: spot.id,
                 label: spot.spot_number,
@@ -124,7 +126,7 @@ export default function ReservationScreen({ route, navigation }) {
                     text: 'Tamam',
                     onPress: () => {
                         navigation.navigate('Main', { 
-                            screen: 'FindMyCar',
+                            screen: 'Home',
                             params: { refreshReservations: true }
                         });
                     }
@@ -148,7 +150,7 @@ export default function ReservationScreen({ route, navigation }) {
                     text: 'Tamam',
                     onPress: () => {
                         navigation.navigate('Main', { 
-                            screen: 'FindMyCar',
+                            screen: 'Home',
                             params: { refreshReservations: true }
                         });
                     }

@@ -32,20 +32,20 @@ export const mockParkingLots = [
     },
     {
         id: 2,
-        name: "Fırat Üniversitesi Otoparkı",
+        name: "Merkez Park",
         latitude: 38.6753,
         longitude: 39.2215,
-        capacity: 200,
-        current_occupancy: 90,
+        capacity: 25,
+        current_occupancy: 5,
         hourly_rate: 10,
         is_active: true,
-        address: "Fırat Üniversitesi Kampüsü, 23119 Elazığ",
+        address: "Merkez, 23119 Elazığ",
         features: ['camera', 'security'],
         rating: 4.2,
         distance: '2.1 km',
         image: require('../assets/images/parking2.jpg'),
-        total_spots: 200,
-        empty_spots: 110,
+        total_spots: 25,
+        empty_spots: 20,
         last_updated: new Date().toISOString()
     },
     {
@@ -162,7 +162,15 @@ export const mockParkingLots = [
 export const generateMockSpots = (lotId, spotsCount = 20) => {
     const spots = [];
     const lot = mockParkingLots.find(l => l.id === lotId);
-    const occupancyRate = lot ? (lot.current_occupancy / lot.capacity) : 0.5;
+    
+    // Merkez Park (id=2) için özel doluluk: tam olarak 5 dolu, 20 boş
+    let occupancyRate;
+    let fixedOccupiedCount = null;
+    if (lotId === 2) {
+        fixedOccupiedCount = 5; // İlk 5 park yeri dolu olacak
+    } else {
+        occupancyRate = lot ? (lot.current_occupancy / lot.capacity) : 0.5;
+    }
 
     // Generate spots in grid pattern (simulating real parking lot layout)
     const rows = Math.ceil(Math.sqrt(spotsCount));
@@ -172,18 +180,26 @@ export const generateMockSpots = (lotId, spotsCount = 20) => {
         const row = Math.floor(i / cols);
         const col = i % cols;
         
+        // Merkez Park için ilk 5 spot dolu, geri kalanı boş
+        let spotStatus;
+        if (fixedOccupiedCount !== null) {
+            spotStatus = i < fixedOccupiedCount ? 'occupied' : 'empty';
+        } else {
+            spotStatus = Math.random() < occupancyRate ? 'occupied' : 'empty';
+        }
+        
         spots.push({
             id: `${lotId}-${i + 1}`,
             spot_number: `${String.fromCharCode(65 + row)}${col + 1}`, // A1, A2, B1, B2...
             parking_lot_id: lotId,
-            status: Math.random() < occupancyRate ? 'occupied' : 'empty',
+            status: spotStatus,
             // Simulated CV detection data
             x: 50 + (col * 80), // Grid coordinates
             y: 50 + (row * 60),
             width: 70,
             height: 50,
             confidence: 0.5 + Math.random() * 0.4, // 0.5-0.9 confidence
-            class_name: Math.random() < occupancyRate ? 'occupied' : 'empty',
+            class_name: spotStatus,
             last_updated: new Date().toISOString()
         });
     }
@@ -238,7 +254,7 @@ export const mockReservations = [
 const elazigParkingNames = [
     { prefix: "Harput", suffix: "Kalesi Otoparkı", type: "historic" },
     { prefix: "Hazar Gölü", suffix: "Park Alanı", type: "nature" },
-    { prefix: "Fırat Üniversitesi", suffix: "Kampüs Otoparkı", type: "education" },
+    { prefix: "Merkez", suffix: "Park", type: "center" },
     { prefix: "Sürsürü", suffix: "Merkez Otopark", type: "center" },
     { prefix: "İzzetpaşa", suffix: "Kapalı Otopark", type: "covered" },
     { prefix: "Rızaiye", suffix: "Park Yeri", type: "neighborhood" },
