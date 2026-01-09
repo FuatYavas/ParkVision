@@ -1,125 +1,202 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     Image,
     ScrollView,
-    TouchableOpacity
+    TouchableOpacity,
+    Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { cvDetectionImages } from '../data/mockData';
+
+const { width } = Dimensions.get('window');
+const IMAGE_HEIGHT = 280;
 
 export default function ParkingDetailScreen({ route, navigation }) {
-    // Use params if available, otherwise mock data
-    const rawLot = route.params?.lot || {
-        name: 'İstinyePark AVM Otoparkı',
+    const lot = route.params?.lot || {
+        name: 'Örnek Otopark',
         occupancy: 56,
         capacity: 100,
         price: 25,
+        hourly_rate: 25,
         isOpen: true,
-        is_active: true
+        is_active: true,
+        image: null
     };
 
-    // Calculate values based on backend data
-    const lot = {
-        ...rawLot,
-        isOpen: rawLot.isOpen !== undefined ? rawLot.isOpen : (rawLot.is_active !== undefined ? rawLot.is_active : true),
-        isReservable: rawLot.isReservable !== undefined ? rawLot.isReservable : (rawLot.is_active !== undefined ? rawLot.is_active : true),
-        price: rawLot.price || rawLot.hourly_rate || 0,
-        occupancy: rawLot.occupancy || 0
+    const [lastUpdate, setLastUpdate] = useState(new Date());
+    // Each parking lot has its own fixed CV detection image based on ID
+    const cvImageIndex = (lot.id - 1) % cvDetectionImages.length;
+
+    // Mock detection stats (in real app, these come from CV module)
+    const emptyCount = 5;
+    const occupiedCount = 7;
+    const occupancyRate = Math.round((occupiedCount / (emptyCount + occupiedCount)) * 100);
+
+    // Simulate periodic updates (only timestamp, image stays same)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setLastUpdate(new Date());
+        }, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const getTimeSinceUpdate = () => {
+        return Math.floor((new Date() - lastUpdate) / 1000);
     };
 
-    const emptySpots = Math.floor(lot.capacity * (1 - lot.occupancy / 100));
+    // Re-render every second to update time display
+    const [, setTick] = useState(0);
+    useEffect(() => {
+        const timer = setInterval(() => setTick(t => t + 1), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     return (
         <SafeAreaView style={styles.container}>
+            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="chevron-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{lot.name}</Text>
+                <Text style={styles.headerTitle} numberOfLines={1}>{lot.name}</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Image
-                    source={{ uri: 'https://images.unsplash.com/photo-1470224114660-3f6686c562eb?q=80&w=2000&auto=format&fit=crop' }}
-                    style={styles.image}
-                />
+                {/* CV Detection View */}
+                <View style={styles.cvContainer}>
+                    <View style={styles.cvHeader}>
+                        <View style={styles.cvTitleRow}>
+                            <Ionicons name="videocam" size={20} color="#0066FF" />
+                            <Text style={styles.cvTitle}>CV Algılama Görüntüsü</Text>
+                        </View>
+                        <View style={styles.liveIndicator}>
+                            <View style={styles.liveDot} />
+                            <Text style={styles.liveText}>CANLI</Text>
+                        </View>
+                    </View>
 
+                    {/* CV Model Result Image - Fixed per parking lot */}
+                    <View style={styles.imageContainer}>
+                        <Image
+                            source={cvDetectionImages[cvImageIndex]}
+                            style={styles.parkingImage}
+                            resizeMode="cover"
+                        />
+                        
+                        {/* Model info overlay */}
+                        <View style={styles.modelInfoOverlay}>
+                            <Text style={styles.modelInfoText}>YOLOv8 • Roboflow Detection</Text>
+                        </View>
+                    </View>
+
+                    {/* Update Info */}
+                    <View style={styles.updateInfo}>
+                        <Ionicons name="refresh" size={14} color="#666" />
+                        <Text style={styles.updateText}>
+                            Son güncelleme: {getTimeSinceUpdate()} saniye önce
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Legend */}
+                <View style={styles.legendCard}>
+                    <Text style={styles.legendTitle}>Gösterge</Text>
+                    <View style={styles.legendRow}>
+                        <View style={styles.legendItem}>
+                            <View style={[styles.legendBox, { borderColor: '#22C55E' }]}>
+                                <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
+                            </View>
+                            <Text style={styles.legendText}>Boş ({emptyCount})</Text>
+                        </View>
+                        <View style={styles.legendItem}>
+                            <View style={[styles.legendBox, { borderColor: '#EF4444' }]}>
+                                <Ionicons name="car" size={16} color="#EF4444" />
+                            </View>
+                            <Text style={styles.legendText}>Dolu ({occupiedCount})</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Stats */}
                 <View style={styles.statsRow}>
                     <View style={styles.statCard}>
-                        <Text style={styles.statLabel}>Doluluk Oranı</Text>
-                        <Text style={styles.statValue}>{lot.occupancy}%</Text>
+                        <Ionicons name="analytics-outline" size={24} color="#0066FF" />
+                        <Text style={styles.statValue}>{occupancyRate}%</Text>
+                        <Text style={styles.statLabel}>Doluluk</Text>
                     </View>
                     <View style={styles.statCard}>
+                        <Ionicons name="car-outline" size={24} color="#22C55E" />
+                        <Text style={styles.statValue}>{emptyCount}</Text>
                         <Text style={styles.statLabel}>Boş Alan</Text>
-                        <Text style={styles.statValue}>{emptySpots}</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <Ionicons name="cash-outline" size={24} color="#F59E0B" />
+                        <Text style={styles.statValue}>{lot.hourly_rate || lot.price}₺</Text>
+                        <Text style={styles.statLabel}>Saat</Text>
                     </View>
                 </View>
 
-                <View style={styles.priceCard}>
-                    <Text style={styles.statLabel}>Saatlik Fiyat</Text>
-                    <Text style={styles.priceValue}>{lot.price}₺</Text>
-                </View>
-
+                {/* Info Card */}
                 <View style={styles.infoCard}>
                     <View style={styles.infoRow}>
                         <View style={styles.infoIconBg}>
-                            <Ionicons name="time-outline" size={20} color="#666" />
+                            <Ionicons name="location-outline" size={20} color="#0066FF" />
                         </View>
-                        <Text style={styles.infoLabel}>Açık/Kapalı Durumu</Text>
-                        <View style={styles.statusBadge}>
-                            <View style={[styles.statusDot, { backgroundColor: lot.isOpen ? '#4CAF50' : '#F44336' }]} />
-                            <Text style={[styles.statusText, { color: lot.isOpen ? '#4CAF50' : '#F44336' }]}>
-                                {lot.isOpen ? 'Açık' : 'Kapalı'}
-                            </Text>
-                        </View>
+                        <Text style={styles.infoText} numberOfLines={2}>
+                            {lot.address || 'Elazığ Merkez'}
+                        </Text>
                     </View>
-
-                    <View style={styles.divider} />
-
+                    <View style={styles.infoDivider} />
                     <View style={styles.infoRow}>
                         <View style={styles.infoIconBg}>
-                            <Ionicons name="checkmark-circle-outline" size={20} color="#666" />
+                            <Ionicons name="time-outline" size={20} color="#0066FF" />
                         </View>
-                        <Text style={styles.infoLabel}>Rezervasyon Uygunluğu</Text>
-                        <View style={styles.statusBadge}>
-                            <View style={[styles.statusDot, { backgroundColor: lot.isReservable ? '#4CAF50' : '#F44336' }]} />
-                            <Text style={[styles.statusText, { color: lot.isReservable ? '#4CAF50' : '#F44336' }]}>
-                                {lot.isReservable ? 'Uygun' : 'Uygun Değil'}
+                        <Text style={styles.infoText}>
+                            {lot.isOpen || lot.is_active ? '24 Saat Açık' : 'Kapalı'}
+                        </Text>
+                        <View style={[
+                            styles.statusBadge, 
+                            { backgroundColor: (lot.isOpen || lot.is_active) ? '#DCFCE7' : '#FEE2E2' }
+                        ]}>
+                            <View style={[
+                                styles.statusDot, 
+                                { backgroundColor: (lot.isOpen || lot.is_active) ? '#22C55E' : '#EF4444' }
+                            ]} />
+                            <Text style={[
+                                styles.statusText,
+                                { color: (lot.isOpen || lot.is_active) ? '#22C55E' : '#EF4444' }
+                            ]}>
+                                {(lot.isOpen || lot.is_active) ? 'Açık' : 'Kapalı'}
                             </Text>
                         </View>
                     </View>
                 </View>
+
+                {/* Spacer for footer */}
+                <View style={{ height: 120 }} />
             </ScrollView>
 
+            {/* Footer */}
             <View style={styles.footer}>
+                <TouchableOpacity
+                    style={styles.navButton}
+                    onPress={() => navigation.navigate('Navigation', { lot })}
+                >
+                    <Ionicons name="navigate-outline" size={20} color="#0066FF" />
+                    <Text style={styles.navButtonText}>Yol Tarifi</Text>
+                </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.reserveButton}
                     onPress={() => navigation.navigate('Reservation', { lot })}
                 >
+                    <Ionicons name="calendar-outline" size={20} color="white" />
                     <Text style={styles.reserveButtonText}>Rezerve Et</Text>
                 </TouchableOpacity>
-
-                <View style={styles.footerButtonsRow}>
-                    <TouchableOpacity
-                        style={styles.secondaryButton}
-                        onPress={() => navigation.navigate('Navigation', { lot })}
-                    >
-                        <Ionicons name="navigate-outline" size={20} color="#0066FF" />
-                        <Text style={styles.secondaryButtonText}>Navigasyon</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.secondaryButton}
-                        onPress={() => navigation.navigate('Navigation', { lot })}
-                    >
-                        <Ionicons name="map-outline" size={20} color="#0066FF" />
-                        <Text style={styles.secondaryButtonText}>Yol Tarifi</Text>
-                    </TouchableOpacity>
-                </View>
             </View>
         </SafeAreaView>
     );
@@ -128,7 +205,7 @@ export default function ParkingDetailScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F7FA',
+        backgroundColor: '#F5F5F5',
     },
     header: {
         flexDirection: 'row',
@@ -136,7 +213,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: '#fff',
+        backgroundColor: 'white',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
     },
     backButton: {
         padding: 4,
@@ -144,147 +223,248 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
+        flex: 1,
+        textAlign: 'center',
+        marginHorizontal: 8,
     },
     scrollContent: {
         padding: 16,
     },
-    image: {
-        width: '100%',
-        height: 200,
+    cvContainer: {
+        backgroundColor: 'white',
         borderRadius: 16,
+        overflow: 'hidden',
         marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    cvHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 12,
+        backgroundColor: '#F0F7FF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+    },
+    cvTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    cvTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#0066FF',
+    },
+    liveIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FEE2E2',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        gap: 6,
+    },
+    liveDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#EF4444',
+    },
+    liveText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#EF4444',
+    },
+    imageContainer: {
+        position: 'relative',
+        width: '100%',
+        height: IMAGE_HEIGHT,
+    },
+    parkingImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 4,
+    },
+    modelInfoOverlay: {
+        position: 'absolute',
+        bottom: 8,
+        left: 8,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 6,
+    },
+    modelInfoText: {
+        color: 'white',
+        fontSize: 10,
+        fontWeight: '500',
+    },
+    updateInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        backgroundColor: '#F9FAFB',
+        gap: 6,
+    },
+    updateText: {
+        fontSize: 12,
+        color: '#666',
+    },
+    legendCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+    },
+    legendTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 12,
+    },
+    legendRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    legendItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    legendBox: {
+        width: 36,
+        height: 36,
+        borderWidth: 2,
+        borderRadius: 6,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.9)',
+    },
+    legendText: {
+        fontSize: 14,
+        color: '#333',
+        fontWeight: '500',
     },
     statsRow: {
         flexDirection: 'row',
-        gap: 16,
+        gap: 12,
         marginBottom: 16,
     },
     statCard: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: 'white',
+        borderRadius: 12,
         padding: 16,
-        borderRadius: 16,
+        alignItems: 'center',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
-        shadowRadius: 8,
+        shadowRadius: 4,
         elevation: 2,
-    },
-    statLabel: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 8,
     },
     statValue: {
-        fontSize: 32,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#000',
+        color: '#333',
+        marginTop: 8,
     },
-    priceCard: {
-        backgroundColor: '#fff',
-        padding: 16,
-        borderRadius: 16,
-        marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-    },
-    priceValue: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#000',
+    statLabel: {
+        fontSize: 12,
+        color: '#666',
+        marginTop: 4,
     },
     infoCard: {
-        backgroundColor: '#fff',
+        backgroundColor: 'white',
+        borderRadius: 12,
         padding: 16,
-        borderRadius: 16,
-        marginBottom: 100, // Space for footer
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
     },
     infoRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 8,
+        gap: 12,
     },
     infoIconBg: {
-        width: 36,
-        height: 36,
-        backgroundColor: '#F5F7FA',
-        borderRadius: 8,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#F0F7FF',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 12,
     },
-    infoLabel: {
+    infoText: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 14,
         color: '#333',
+    },
+    infoDivider: {
+        height: 1,
+        backgroundColor: '#F0F0F0',
+        marginVertical: 12,
     },
     statusBadge: {
         flexDirection: 'row',
         alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        gap: 6,
     },
     statusDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginRight: 6,
+        width: 6,
+        height: 6,
+        borderRadius: 3,
     },
     statusText: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '600',
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#F0F0F0',
-        marginVertical: 8,
     },
     footer: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: '#fff',
-        padding: 16,
-        borderTopWidth: 1,
-        borderTopColor: '#F0F0F0',
-    },
-    reserveButton: {
-        backgroundColor: '#0066FF',
-        padding: 16,
-        borderRadius: 12,
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    reserveButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    footerButtonsRow: {
         flexDirection: 'row',
+        padding: 16,
+        paddingBottom: 24,
+        backgroundColor: 'white',
+        borderTopWidth: 1,
+        borderTopColor: '#E0E0E0',
         gap: 12,
     },
-    secondaryButton: {
+    navButton: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#E3F2FD',
-        padding: 12,
+        padding: 16,
         borderRadius: 12,
+        gap: 8,
     },
-    secondaryButtonText: {
-        marginLeft: 8,
+    navButtonText: {
         color: '#0066FF',
-        fontSize: 14,
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    reserveButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#0066FF',
+        padding: 16,
+        borderRadius: 12,
+        gap: 8,
+    },
+    reserveButtonText: {
+        color: 'white',
+        fontSize: 16,
         fontWeight: '600',
     },
 });

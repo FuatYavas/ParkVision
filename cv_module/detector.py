@@ -1,17 +1,15 @@
 """
-Roboflow-based Parking Space Detector
+Roboflow-based Parking Space Detector using Inference SDK
 """
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from dataclasses import dataclass
 
-from roboflow import Roboflow
+from inference_sdk import InferenceHTTPClient
 
 from config import (
     ROBOFLOW_API_KEY,
-    ROBOFLOW_WORKSPACE,
     ROBOFLOW_PROJECT,
-    ROBOFLOW_MODEL_VERSION,
     CONFIDENCE_THRESHOLD
 )
 
@@ -21,7 +19,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Detection:
     """Represents a single parking space detection"""
-    class_name: str  # "empty" or "occupied"
+    class_name: str  # Class detected by model
     confidence: float
     x: int  # center x
     y: int  # center y
@@ -31,17 +29,13 @@ class Detection:
     @property
     def is_empty(self) -> bool:
         """Check if the detected space is empty"""
-        # Model uses "-" for empty spaces (class_id: 0)
-        return self.class_name == "-" or self.class_name.lower() in ["empty", "space-empty", "available", "free"]
+        # Adjust based on your model's class names
+        return self.class_name.lower() in ["empty", "available", "free", "space"]
 
     @property
     def is_occupied(self) -> bool:
         """Check if the detected space is occupied"""
-        # Model uses "Parking Space..." for occupied spaces (class_id: 1)
-        return (
-            self.class_name.startswith("Parking Space") or
-            self.class_name.lower() in ["occupied", "space-occupied", "taken", "car"]
-        )
+        return not self.is_empty
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -57,37 +51,26 @@ class Detection:
 
 class ParkingDetector:
     """
-    Parking space detector using Roboflow model
+    Parking space detector using Roboflow Inference SDK
     """
 
-    def __init__(self, api_key: str = None, model_version: int = None):
+    def __init__(self, api_key: str = None):
         """
-        Initialize the detector with Roboflow model
+        Initialize the detector with Roboflow Inference client
 
         Args:
             api_key: Roboflow API key (uses config default if not provided)
-            model_version: Model version to use (uses config default if not provided)
         """
         self.api_key = api_key or ROBOFLOW_API_KEY
-        self.model_version = model_version or ROBOFLOW_MODEL_VERSION
-        self.model = None
         self.confidence_threshold = CONFIDENCE_THRESHOLD
-
-        self._load_model()
-
-    def _load_model(self):
-        """Load the Roboflow model"""
-        try:
-            logger.info(f"Loading Roboflow model: {ROBOFLOW_WORKSPACE}/{ROBOFLOW_PROJECT}")
-
-            rf = Roboflow(api_key=self.api_key)
-            project = rf.workspace(ROBOFLOW_WORKSPACE).project(ROBOFLOW_PROJECT)
-            self.model = project.version(self.model_version).model
-
-            logger.info("Model loaded successfully")
-        except Exception as e:
-            logger.error(f"Failed to load model: {e}")
-            raise RuntimeError(f"Could not load Roboflow model: {e}")
+        
+        # Initialize Inference client
+        self.client = InferenceHTTPClient(
+            api_url="https://detect.roboflow.com",
+            api_key=self.api_key
+        )
+        
+        logger.info(f"Initialized Roboflow Inference client for project: {ROBOFLOW_PROJECT}")
 
     def detect(self, image_path: str) -> List[Detection]:
         """
@@ -99,27 +82,27 @@ class ParkingDetector:
         Returns:
             List of Detection objects
         """
-        if self.model is None:
-            raise RuntimeError("Model not loaded")
-
         try:
-            # Run inference
-            result = self.model.predict(image_path, confidence=int(self.confidence_threshold * 100))
-            predictions = result.json()
-
+            # Run inference using the Inference SDK
+            result = self.client.infer(image_path, model_id=ROBOFLOW_PROJECT)
+            
             detections = []
-            for pred in predictions.get("predictions", []):
-                detection = Detection(
-                    class_name=pred["class"],
-                    confidence=pred["confidence"],
-                    x=int(pred["x"]),
-                    y=int(pred["y"]),
-                    width=int(pred["width"]),
-                    height=int(pred["height"])
-                )
-                detections.append(detection)
+            predictions = result.get("predictions", [])
+            
+            for pred in predictions:
+                # Filter by confidence threshold
+                if pred["confidence"] >= self.confidence_threshold:
+                    detection = Detection(
+                        class_name=pred["class"],
+                        confidence=pred["confidence"],
+                        x=int(pred["x"]),
+                        y=int(pred["y"]),
+                        width=int(pred["width"]),
+                        height=int(pred["height"])
+                    )
+                    detections.append(detection)
 
-            logger.info(f"Detected {len(detections)} parking spaces")
+            logger.info(f"Detected {len(detections)} parking spaces with confidence >= {self.confidence_threshold}")
             return detections
 
         except Exception as e:
@@ -180,3 +163,58 @@ class ParkingDetector:
             "occupied": occupied_count,
             "occupancy_rate": occupied_count / len(detections) if detections else 0
         }
+
+    def visualize_detections(self, image_path: str, detections: List[Detection], output_path: str = None) -> str:
+        """
+        Draw bounding boxes on the image and save it
+
+        Args:
+            image_path: Path to the original image
+            detections: List of Detection objects
+            output_path: Path to save the result (default: adds _result suffix)
+
+        Returns:
+            Path to the saved image
+        """
+        import cv2
+        import os
+
+        # Read image
+        img = cv2.imread(image_path)
+        if img is None:
+            raise ValueError(f"Could not read image: {image_path}")
+
+        # Draw each detection
+        for det in detections:
+            # Calculate bounding box corners
+            x1 = int(det.x - det.width / 2)
+            y1 = int(det.y - det.height / 2)
+            x2 = int(det.x + det.width / 2)
+            y2 = int(det.y + det.height / 2)
+
+            # Color based on status (Green=empty, Red=occupied)
+            color = (0, 255, 0) if det.is_empty else (0, 0, 255)
+
+            # Draw rectangle
+            cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+
+            # Draw label with confidence
+            label = f"{det.class_name} {det.confidence:.2f}"
+            label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+            
+            # Draw label background
+            cv2.rectangle(img, (x1, y1 - label_size[1] - 4), (x1 + label_size[0], y1), color, -1)
+            
+            # Draw label text
+            cv2.putText(img, label, (x1, y1 - 2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+
+        # Generate output path if not provided
+        if output_path is None:
+            base, ext = os.path.splitext(image_path)
+            output_path = f"{base}_result{ext}"
+
+        # Save result
+        cv2.imwrite(output_path, img)
+        logger.info(f"Saved visualization to: {output_path}")
+
+        return output_path

@@ -19,12 +19,10 @@ import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useLiveParkingUpdates from '../hooks/useLiveParkingUpdates';
 
 const { width } = Dimensions.get('window');
 const FAVORITES_KEY = 'favorite_parking_lots';
-
-import { getParkingLots } from '../api';
-import { mockParkingLots, generateDynamicParkingLots } from '../data/mockData';
 
 // Helper function to get marker color based on occupancy
 const getMarkerColor = (occupancy) => {
@@ -36,8 +34,6 @@ const getMarkerColor = (occupancy) => {
 
 export default function MapScreen({ navigation }) {
     const [location, setLocation] = useState(null);
-    const [parkingLots, setParkingLots] = useState([]);
-    const [allParkingLots, setAllParkingLots] = useState([]); // Store all lots
     const [selectedLot, setSelectedLot] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
@@ -50,6 +46,30 @@ export default function MapScreen({ navigation }) {
     const [activeModal, setActiveModal] = useState(null); // 'price', 'distance', 'features', 'sort'
     const [favorites, setFavorites] = useState([]);
     const mapRef = React.useRef(null);
+    const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+    // Use live parking updates hook
+    const { parkingLots, lastUpdate, refresh, getOccupancyRate, getTimeSinceUpdate } = useLiveParkingUpdates(5000, favorites);
+    const [allParkingLots, setAllParkingLots] = useState(parkingLots);
+
+    // Update allParkingLots when parkingLots change
+    useEffect(() => {
+        setAllParkingLots(parkingLots);
+        
+        // Animate marker pulse on update
+        Animated.sequence([
+            Animated.timing(pulseAnim, {
+                toValue: 1.2,
+                duration: 300,
+                useNativeDriver: true
+            }),
+            Animated.timing(pulseAnim, {
+                toValue: 1,
+                duration: 300,
+                useNativeDriver: true
+            })
+        ]).start();
+    }, [parkingLots]);
 
     // Swipe-to-dismiss için Animated value
     const panY = useRef(new Animated.Value(0)).current;
@@ -150,6 +170,7 @@ export default function MapScreen({ navigation }) {
         }
     };
 
+<<<<<<< HEAD
     // Calculate distance between two coordinates in km
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         const R = 6371; // Earth's radius in km
@@ -221,6 +242,10 @@ export default function MapScreen({ navigation }) {
 
     // Filter and search parking lots
     const applyFilters = () => {
+=======
+    // Filter and search parking lots (computed value)
+    const getFilteredParkingLots = () => {
+>>>>>>> develop
         let filtered = [...allParkingLots];
 
         // Apply search
@@ -284,15 +309,11 @@ export default function MapScreen({ navigation }) {
             }
         });
 
-        setParkingLots(filtered);
+        return filtered;
     };
 
     // Apply filters when search or filters change
-    useEffect(() => {
-        if (allParkingLots.length > 0) {
-            applyFilters();
-        }
-    }, [searchQuery, filters, allParkingLots]);
+    const displayedParkingLots = getFilteredParkingLots();
 
     const handlePriceFilter = () => {
         setActiveModal('price');
@@ -655,7 +676,7 @@ export default function MapScreen({ navigation }) {
                 showsMyLocationButton={false}
                 onPress={() => setSelectedLot(null)}
             >
-                {parkingLots.map((lot) => (
+                {displayedParkingLots.map((lot) => (
                     <Marker
                         key={`lot-${lot.id}`}
                         coordinate={{
@@ -669,6 +690,17 @@ export default function MapScreen({ navigation }) {
                     />
                 ))}
             </MapView>
+
+            {/* Live Update Indicator */}
+            <View style={styles.liveUpdateContainer}>
+                <View style={[styles.liveIndicator, { backgroundColor: '#22C55E' }]} />
+                <Text style={styles.liveUpdateText}>
+                    Canlı Güncelleme • {getTimeSinceUpdate()} saniye önce
+                </Text>
+                <TouchableOpacity onPress={refresh} style={styles.refreshButton}>
+                    <Ionicons name="refresh" size={16} color="#666" />
+                </TouchableOpacity>
+            </View>
 
             {/* Location Button */}
             <TouchableOpacity
@@ -747,7 +779,7 @@ export default function MapScreen({ navigation }) {
                 {searchQuery.trim() || filters.maxPrice || filters.maxDistance || filters.features.length > 0 ? (
                     <View style={styles.resultsBar}>
                         <Text style={styles.resultsText}>
-                            {parkingLots.length} otopark bulundu
+                            {displayedParkingLots.length} otopark bulundu
                         </Text>
                         {(filters.maxPrice || filters.maxDistance || filters.features.length > 0 || searchQuery.trim()) && (
                             <TouchableOpacity
@@ -1231,5 +1263,38 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: '600',
+    },
+    liveUpdateContainer: {
+        position: 'absolute',
+        top: Platform.OS === 'ios' ? 50 : 10,
+        left: 16,
+        right: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        zIndex: 10,
+    },
+    liveIndicator: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        marginRight: 8,
+    },
+    liveUpdateText: {
+        flex: 1,
+        fontSize: 12,
+        color: '#666',
+        fontWeight: '500',
+    },
+    refreshButton: {
+        padding: 4,
     },
 });

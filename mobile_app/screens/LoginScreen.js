@@ -20,6 +20,12 @@ export default function LoginScreen({ navigation }) {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
+    // Mock login for demo - bypass server
+    const handleMockLogin = () => {
+        console.log('✓ Mock login - Demo modunda giriş yapıldı');
+        navigation.replace('Main');
+    };
+
     const handleLogin = async () => {
         if (!email || !password) {
             Alert.alert('Hata', 'Lütfen tüm alanları doldurun');
@@ -32,11 +38,22 @@ export default function LoginScreen({ navigation }) {
         } catch (error) {
             console.error('Login failed:', error);
 
+            // If network error, offer mock login
+            if (error.message === 'Network Error') {
+                Alert.alert(
+                    'Sunucu Bağlantısı Yok',
+                    'Backend sunucusuna bağlanılamıyor. Demo modunda devam etmek ister misiniz?',
+                    [
+                        { text: 'İptal', style: 'cancel' },
+                        { text: 'Demo Modu', onPress: handleMockLogin }
+                    ]
+                );
+                return;
+            }
+
             let errorMessage = 'Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.';
 
-            if (error.message === 'Network Error') {
-                errorMessage = 'Sunucuya bağlanılamıyor. İnternet bağlantınızı kontrol edin ve sunucunun çalıştığından emin olun.';
-            } else if (error.code === 'ECONNABORTED') {
+            if (error.code === 'ECONNABORTED') {
                 errorMessage = 'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.';
             } else if (error.response) {
                 errorMessage = error.response.data?.detail || 'Giriş yapılamadı. Email veya şifre hatalı.';
@@ -109,6 +126,12 @@ export default function LoginScreen({ navigation }) {
                     <TouchableOpacity style={[styles.googleButton, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <Ionicons name="logo-google" size={24} color="#DB4437" style={styles.googleIcon} />
                         <Text style={[styles.googleButtonText, { color: colors.text }]}>Google ile giriş</Text>
+                    </TouchableOpacity>
+
+                    {/* Demo Mode Button */}
+                    <TouchableOpacity style={styles.demoButton} onPress={handleMockLogin}>
+                        <Ionicons name="play-circle-outline" size={24} color="#22C55E" style={styles.demoIcon} />
+                        <Text style={styles.demoButtonText}>Demo Modu (Backend Gerekmez)</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -248,6 +271,25 @@ const styles = StyleSheet.create({
     },
     googleButtonText: {
         color: '#333',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    demoButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#F0FDF4',
+        borderWidth: 1,
+        borderColor: '#22C55E',
+        borderRadius: 12,
+        padding: 16,
+        marginTop: 12,
+    },
+    demoIcon: {
+        marginRight: 12,
+    },
+    demoButtonText: {
+        color: '#22C55E',
         fontSize: 16,
         fontWeight: '500',
     },

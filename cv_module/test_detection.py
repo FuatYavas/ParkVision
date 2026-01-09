@@ -38,6 +38,11 @@ def test_detection(image_path: str):
             status = "EMPTY" if det.is_empty else "OCCUPIED"
             print(f"  {i}. {status} (confidence: {det.confidence:.2f}) at ({det.x}, {det.y})")
 
+        # Visualize and save result
+        print(f"\n--- Saving Visualization ---")
+        output_path = detector.visualize_detections(image_path, detections)
+        print(f"✅ Result saved to: {output_path}")
+
         return True
 
     except Exception as e:
