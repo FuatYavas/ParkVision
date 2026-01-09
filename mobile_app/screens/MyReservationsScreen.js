@@ -314,12 +314,10 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 12,
         fontSize: 16,
-        color: '#666',
     },
     headerTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#000',
     },
     scrollContent: {
         padding: 16,
@@ -332,13 +330,11 @@ const styles = StyleSheet.create({
     emptyTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#333',
         marginTop: 16,
         marginBottom: 8,
     },
     emptyText: {
         fontSize: 16,
-        color: '#666',
         textAlign: 'center',
         marginBottom: 24,
         paddingHorizontal: 32,
@@ -369,7 +365,6 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         padding: 16,
         marginBottom: 12,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -384,12 +379,10 @@ const styles = StyleSheet.create({
     parkingName: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
         marginBottom: 4,
     },
     spotNumber: {
         fontSize: 14,
-        color: '#666',
     },
     statusBadge: {
         flexDirection: 'row',
@@ -421,7 +414,6 @@ const styles = StyleSheet.create({
     },
     timerLabel: {
         fontSize: 14,
-        color: '#666',
         marginLeft: 8,
         marginRight: 8,
     },
@@ -443,13 +435,11 @@ const styles = StyleSheet.create({
     },
     infoLabel: {
         fontSize: 12,
-        color: '#666',
         marginBottom: 4,
     },
     infoValue: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#000',
     },
     cardActions: {
         flexDirection: 'row',

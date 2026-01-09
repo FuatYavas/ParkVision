@@ -6,7 +6,8 @@ import Constants from 'expo-constants';
 // Bildirim davranışını yapılandır
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
-        shouldShowAlert: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
         shouldPlaySound: true,
         shouldSetBadge: true,
     }),

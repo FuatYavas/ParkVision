@@ -1,35 +1,55 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     TouchableOpacity,
     Dimensions,
-    Image
+    Animated,
+    Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function OnboardingScreen({ navigation }) {
     const { colors, isDark } = useTheme();
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const scaleAnim = useRef(new Animated.Value(0.8)).current;
+
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 800,
+                useNativeDriver: true,
+            }),
+            Animated.spring(scaleAnim, {
+                toValue: 1,
+                friction: 8,
+                tension: 40,
+                useNativeDriver: true,
+            })
+        ]).start();
+    }, []);
+
     const features = [
         {
-            icon: 'time-outline',
+            icon: 'time',
             title: 'Gerçek Zamanlı Doluluk',
-            description: 'Park yeri müsaitliğini anlık olarak kontrol edin.'
+            color: '#22C55E'
         },
         {
-            icon: 'calendar-outline',
+            icon: 'calendar',
             title: 'Kolay Rezervasyon',
-            description: 'Birkaç dokunusla yerinizi önceden ayırtın.'
+            color: '#0EA5E9'
         },
         {
-            icon: 'navigate-outline',
+            icon: 'navigate',
             title: 'Akıllı Navigasyon',
-            description: 'Rezerve ettiğiniz yere adım adım yol tarifi alın.'
+            color: '#8B5CF6'
         }
     ];
 
@@ -39,59 +59,96 @@ export default function OnboardingScreen({ navigation }) {
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            {/* Skip Button */}
+            <TouchableOpacity 
+                style={styles.skipButton} 
+                onPress={handleGetStarted}
+            >
+                <Text style={[styles.skipText, { color: colors.textSecondary }]}>Atla</Text>
+            </TouchableOpacity>
+
             <View style={styles.content}>
-                {/* Header Section */}
-                <View style={styles.headerSection}>
-                    <View style={styles.iconGrid}>
-                        <View style={styles.gridRow}>
-                            <Ionicons name="map-outline" size={40} color={colors.primary} style={styles.gridIcon} />
-                            <Ionicons name="calendar-outline" size={40} color={colors.primary} style={styles.gridIcon} />
+                {/* Hero Section */}
+                <Animated.View 
+                    style={[
+                        styles.heroSection,
+                        { 
+                            opacity: fadeAnim,
+                            transform: [{ scale: scaleAnim }]
+                        }
+                    ]}
+                >
+                    {/* App Icon/Logo Area */}
+                    <View style={styles.logoContainer}>
+                        <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
+                            <Ionicons name="car-sport" size={48} color="white" />
                         </View>
-                        <View style={styles.gridRow}>
-                            <Ionicons name="navigate-outline" size={40} color={colors.primary} style={styles.gridIcon} />
-                            <Ionicons name="car-outline" size={40} color={colors.primary} style={styles.gridIcon} />
-                        </View>
+                        <View style={[styles.logoPulse, { borderColor: colors.primary }]} />
                     </View>
 
-                    <Text style={[styles.title, { color: colors.text }]}>Akıllı Park Asistanınız</Text>
-                    <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                        Mükemmel park yerinizi kolayca bulun, rezerve edin ve navigasyonla ulaşın.
+                    <Text style={[styles.title, { color: colors.text }]}>
+                        Akıllı Park Asistanınız
                     </Text>
-                </View>
+                    <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+                        Mükemmel park yerinizi kolayca bulun,{'\n'}rezerve edin ve navigasyonla ulaşın.
+                    </Text>
+                </Animated.View>
 
-                {/* Features List (Hidden in main design but good for accessibility/alternative) */}
-                {/* 
-                <View style={styles.featuresList}>
+                {/* Features */}
+                <Animated.View 
+                    style={[
+                        styles.featuresContainer,
+                        { opacity: fadeAnim }
+                    ]}
+                >
                     {features.map((feature, index) => (
-                        <View key={index} style={styles.featureItem}>
-                            <Ionicons name="checkmark-circle-outline" size={24} color="#4CAF50" />
-                            <Text style={styles.featureText}>{feature.title}</Text>
-                        </View>
+                        <Animated.View
+                            key={index}
+                            style={[
+                                styles.featureCard,
+                                { 
+                                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                                    transform: [{
+                                        translateY: fadeAnim.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: [30 * (index + 1), 0]
+                                        })
+                                    }]
+                                }
+                            ]}
+                        >
+                            <View style={[styles.featureIcon, { backgroundColor: feature.color + '15' }]}>
+                                <Ionicons name={feature.icon} size={28} color={feature.color} />
+                            </View>
+                            <Text style={[styles.featureTitle, { color: colors.text }]}>
+                                {feature.title}
+                            </Text>
+                        </Animated.View>
                     ))}
-                </View>
-                */}
-
-                {/* Features Checklist */}
-                <View style={styles.checklist}>
-                    {features.map((feature, index) => (
-                        <View key={index} style={styles.checklistItem}>
-                            <Ionicons name="checkmark-circle-outline" size={24} color={colors.primary} />
-                            <Text style={[styles.checklistText, { color: colors.text }]}>{feature.title}</Text>
-                        </View>
-                    ))}
-                </View>
-
-                {/* Footer Buttons */}
-                <View style={styles.footer}>
-                    <TouchableOpacity style={[styles.skipButton, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]} onPress={handleGetStarted}>
-                        <Text style={[styles.skipButtonText, { color: colors.text }]}>Atla</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={[styles.getStartedButton, { backgroundColor: colors.primary }]} onPress={handleGetStarted}>
-                        <Text style={styles.getStartedButtonText}>Başla</Text>
-                    </TouchableOpacity>
-                </View>
+                </Animated.View>
             </View>
+
+            {/* CTA Button */}
+            <Animated.View 
+                style={[
+                    styles.footer,
+                    { opacity: fadeAnim }
+                ]}
+            >
+                <TouchableOpacity 
+                    style={[
+                        styles.ctaButton, 
+                        { 
+                            backgroundColor: colors.primary,
+                        }
+                    ]} 
+                    onPress={handleGetStarted}
+                    activeOpacity={0.9}
+                >
+                    <Text style={styles.ctaText}>Hemen Başla</Text>
+                    <Ionicons name="arrow-forward" size={22} color="white" />
+                </TouchableOpacity>
+            </Animated.View>
         </SafeAreaView>
     );
 }
@@ -99,83 +156,128 @@ export default function OnboardingScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F7FA',
+    },
+    skipButton: {
+        position: 'absolute',
+        top: Platform.OS === 'ios' ? 60 : 24,
+        right: 24,
+        padding: 12,
+        paddingHorizontal: 16,
+        zIndex: 10,
+    },
+    skipText: {
+        fontSize: 16,
+        fontWeight: '600',
     },
     content: {
         flex: 1,
-        padding: 24,
+        paddingHorizontal: 24,
+        paddingTop: Platform.OS === 'ios' ? 100 : 80,
         justifyContent: 'space-between',
     },
-    headerSection: {
+    heroSection: {
         alignItems: 'center',
-        marginTop: 60,
+        marginTop: 40,
     },
-    iconGrid: {
+    logoContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
         marginBottom: 40,
+        position: 'relative',
     },
-    gridRow: {
-        flexDirection: 'row',
-        gap: 20,
-        marginBottom: 20,
+    logoCircle: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        justifyContent: 'center',
+        alignItems: 'center',
+        ...Platform.select({
+            ios: {
+                shadowColor: '#0066FF',
+                shadowOffset: { width: 0, height: 12 },
+                shadowOpacity: 0.3,
+                shadowRadius: 24,
+            },
+            android: {
+                elevation: 12,
+            },
+        }),
     },
-    gridIcon: {
-        opacity: 0.8,
+    logoPulse: {
+        position: 'absolute',
+        width: 140,
+        height: 140,
+        borderRadius: 70,
+        borderWidth: 2,
+        opacity: 0.2,
     },
     title: {
-        fontSize: 32,
+        fontSize: 34,
         fontWeight: 'bold',
-        color: '#003366',
         textAlign: 'center',
         marginBottom: 16,
-        lineHeight: 40,
+        letterSpacing: -0.5,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#666',
+        fontSize: 17,
         textAlign: 'center',
-        lineHeight: 24,
+        lineHeight: 26,
         paddingHorizontal: 20,
+        opacity: 0.7,
     },
-    checklist: {
-        marginTop: 40,
-        paddingHorizontal: 20,
+    featuresContainer: {
+        marginTop: 60,
+        gap: 16,
     },
-    checklistItem: {
+    featureCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
+        padding: 20,
+        borderRadius: 20,
+        gap: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(0, 0, 0, 0.05)',
     },
-    checklistText: {
-        fontSize: 18,
+    featureIcon: {
+        width: 56,
+        height: 56,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    featureTitle: {
+        flex: 1,
+        fontSize: 17,
         fontWeight: '600',
-        color: '#333',
-        marginLeft: 12,
+        letterSpacing: -0.3,
     },
     footer: {
-        gap: 16,
-        marginBottom: 20,
+        paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+        paddingTop: 20,
     },
-    skipButton: {
-        padding: 16,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#003366',
+    ctaButton: {
+        flexDirection: 'row',
+        justifyContent: 'center',
         alignItems: 'center',
+        gap: 12,
+        paddingVertical: 18,
+        borderRadius: 16,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#0066FF',
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.25,
+                shadowRadius: 16,
+            },
+            android: {
+                elevation: 8,
+            },
+        }),
     },
-    skipButtonText: {
-        color: '#003366',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    getStartedButton: {
-        backgroundColor: '#003366',
-        padding: 16,
-        borderRadius: 12,
-        alignItems: 'center',
-    },
-    getStartedButtonText: {
+    ctaText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
+        letterSpacing: 0.3,
     },
 });

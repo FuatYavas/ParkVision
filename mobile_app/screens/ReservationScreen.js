@@ -51,12 +51,13 @@ export default function ReservationScreen({ route, navigation }) {
         } catch (error) {
             // API mevcut değil, mock data kullanılıyor (normal davranış)
             console.log('Using mock parking spots data');
-            // Fallback to mock data
+            // Fallback to mock data with random occupancy
             const mockSpots = generateMockSpots(lotId, 20);
             const formattedSpots = mockSpots.map(spot => ({
                 id: spot.id,
                 label: spot.spot_number,
-                status: spot.is_occupied ? 'occupied' : 'available'
+                // spot.status zaten 'occupied' veya 'empty' olarak geliyor
+                status: spot.status === 'occupied' ? 'occupied' : 'available'
             }));
             setSpots(formattedSpots);
         }
@@ -108,6 +109,16 @@ export default function ReservationScreen({ route, navigation }) {
             reservations.push(newReservation);
             await AsyncStorage.setItem('user_reservations', JSON.stringify(reservations));
 
+            // Rezerve edilen yeri dolu olarak işaretle
+            setSpots(prevSpots => prevSpots.map(spot => 
+                spot.id === selectedSpot 
+                    ? { ...spot, status: 'occupied' }
+                    : spot
+            ));
+
+            // Seçimi temizle
+            setSelectedSpot(null);
+
             Alert.alert('Başarılı', `Park yeri ${spotLabel} rezerve edildi!`, [
                 {
                     text: 'Tamam',
@@ -116,6 +127,17 @@ export default function ReservationScreen({ route, navigation }) {
             ]);
         } catch (error) {
             console.log('Reservation saved locally');
+            
+            // Rezerve edilen yeri dolu olarak işaretle
+            setSpots(prevSpots => prevSpots.map(spot => 
+                spot.id === selectedSpot 
+                    ? { ...spot, status: 'occupied' }
+                    : spot
+            ));
+
+            // Seçimi temizle
+            setSelectedSpot(null);
+
             Alert.alert('Başarılı', `Park yeri ${spotLabel} rezerve edildi!`, [
                 {
                     text: 'Tamam',
@@ -263,7 +285,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
     },
     content: {
         padding: 20,
@@ -274,12 +295,10 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     timeBox: {
-        backgroundColor: 'white',
         width: '30%',
         padding: 16,
         borderRadius: 12,
         alignItems: 'center',
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
@@ -288,16 +307,13 @@ const styles = StyleSheet.create({
     timeValue: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#000',
         marginBottom: 4,
     },
     timeLabel: {
         fontSize: 12,
-        color: '#666',
     },
     instructionText: {
         textAlign: 'center',
-        color: '#333',
         fontSize: 16,
         marginBottom: 24,
     },
@@ -318,7 +334,6 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     legendText: {
-        color: '#666',
         fontSize: 14,
     },
     gridContainer: {
@@ -353,7 +368,7 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     spotTextOccupied: {
-        color: '#666',
+        opacity: 0.6,
     },
     spotTextAvailable: {
         color: 'white',
@@ -377,12 +392,10 @@ const styles = StyleSheet.create({
     qrTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#000',
         marginBottom: 8,
     },
     qrSubtitle: {
         textAlign: 'center',
-        color: '#666',
         fontSize: 14,
     },
     footer: {

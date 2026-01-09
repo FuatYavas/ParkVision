@@ -21,7 +21,6 @@ import FavoritesScreen from './screens/FavoritesScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import AppearanceScreen from './screens/AppearanceScreen';
-import LanguageScreen from './screens/LanguageScreen';
 import PlaceholderScreen from './screens/PlaceholderScreen';
 
 const Stack = createNativeStackNavigator();
@@ -160,11 +159,6 @@ const AppContent = () => {
           component={AppearanceScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="Language"
-          component={LanguageScreen}
-          options={{ headerShown: false }}
-        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -176,14 +170,19 @@ export default function App() {
   const responseListener = useRef();
 
   useEffect(() => {
-    // Push notification token'ı al
-    registerForPushNotificationsAsync().then(token => {
-      if (token) {
-        setExpoPushToken(token);
-        console.log('Expo Push Token:', token);
-        // TODO: Token'ı backend'e gönder
-      }
-    });
+    // Push notification token'ı al (Expo Go'da çalışmaz, sadece dev build'de)
+    registerForPushNotificationsAsync()
+      .then(token => {
+        if (token) {
+          setExpoPushToken(token);
+          console.log('Expo Push Token:', token);
+          // TODO: Token'ı backend'e gönder
+        }
+      })
+      .catch(error => {
+        // Expo Go veya emulator'da push notification token alınamaz - bu normal
+        console.log('Push notification token alınamadı (Expo Go/Emulator):', error.message);
+      });
 
     // Bildirim geldiğinde listener
     notificationListener.current = addNotificationReceivedListener(notification => {

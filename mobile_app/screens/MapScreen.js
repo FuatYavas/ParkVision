@@ -21,6 +21,7 @@ import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useLiveParkingUpdates from '../hooks/useLiveParkingUpdates';
 import { useTheme } from '../context/ThemeContext';
+import { generateDynamicParkingLots } from '../data/mockData';
 
 const { width } = Dimensions.get('window');
 const FAVORITES_KEY = 'favorite_parking_lots';
@@ -129,6 +130,7 @@ export default function MapScreen({ navigation }) {
     });
     const [activeModal, setActiveModal] = useState(null); // 'price', 'distance', 'features', 'sort'
     const [favorites, setFavorites] = useState([]);
+    const [dynamicLots, setDynamicLots] = useState([]); // Kullanıcı konumuna göre dinamik otoparklar
     const mapRef = React.useRef(null);
     const pulseAnim = React.useRef(new Animated.Value(1)).current;
 
@@ -136,9 +138,10 @@ export default function MapScreen({ navigation }) {
     const { parkingLots, lastUpdate, refresh, getOccupancyRate, getTimeSinceUpdate } = useLiveParkingUpdates(5000, favorites);
     const [allParkingLots, setAllParkingLots] = useState(parkingLots);
 
-    // Update allParkingLots when parkingLots change
+    // Update allParkingLots when parkingLots change (static + dynamic)
     useEffect(() => {
-        setAllParkingLots(parkingLots);
+        // Static otoparklar + dinamik otoparkları birleştir
+        setAllParkingLots([...parkingLots, ...dynamicLots]);
         
         // Animate marker pulse on update
         Animated.sequence([
@@ -153,7 +156,7 @@ export default function MapScreen({ navigation }) {
                 useNativeDriver: true
             })
         ]).start();
-    }, [parkingLots]);
+    }, [parkingLots, dynamicLots]); // dynamicLots değişince de güncelle
 
     // Swipe-to-dismiss için Animated value
     const panY = useRef(new Animated.Value(0)).current;
@@ -214,6 +217,16 @@ export default function MapScreen({ navigation }) {
                     accuracy: Location.Accuracy.High
                 });
                 setLocation(currentLocation);
+
+                // Kullanıcı konumuna göre dinamik otoparklar oluştur
+                const dynamicLots = generateDynamicParkingLots(
+                    currentLocation.coords.latitude,
+                    currentLocation.coords.longitude,
+                    8 // 8 rastgele otopark
+                );
+
+                // Dinamik otoparkları state'e kaydet (bir kere)
+                setDynamicLots(dynamicLots);
             } catch (error) {
                 console.error('Error getting location:', error);
             }
@@ -362,11 +375,11 @@ export default function MapScreen({ navigation }) {
                 activeOpacity={1}
                 onPress={() => setActiveModal(null)}
             >
-                <View style={styles.modalContent}>
-                    <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Fiyat Filtresi</Text>
+                <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+                    <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>Fiyat Filtresi</Text>
                         <TouchableOpacity onPress={() => setActiveModal(null)}>
-                            <Ionicons name="close" size={24} color="#666" />
+                            <Ionicons name="close" size={24} color={colors.textSecondary} />
                         </TouchableOpacity>
                     </View>
 
@@ -386,22 +399,22 @@ export default function MapScreen({ navigation }) {
                                     setActiveModal(null);
                                 }}
                             >
-                                <Text style={styles.optionText}>{option.label}</Text>
+                                <Text style={[styles.optionText, { color: colors.text }]}>{option.label}</Text>
                                 {filters.maxPrice === option.value && (
-                                    <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
+                                    <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
                                 )}
                             </TouchableOpacity>
                         ))}
                     </View>
 
                     <TouchableOpacity
-                        style={styles.clearButton}
+                        style={[styles.clearButton, { borderColor: colors.border, backgroundColor: colors.background }]}
                         onPress={() => {
                             setFilters({ ...filters, maxPrice: null });
                             setActiveModal(null);
                         }}
                     >
-                        <Text style={styles.clearButtonText}>Temizle</Text>
+                        <Text style={[styles.clearButtonText, { color: colors.textSecondary }]}>Temizle</Text>
                     </TouchableOpacity>
                 </View>
             </TouchableOpacity>
@@ -420,11 +433,11 @@ export default function MapScreen({ navigation }) {
                 activeOpacity={1}
                 onPress={() => setActiveModal(null)}
             >
-                <View style={styles.modalContent}>
-                    <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Mesafe Filtresi</Text>
+                <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+                    <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>Mesafe Filtresi</Text>
                         <TouchableOpacity onPress={() => setActiveModal(null)}>
-                            <Ionicons name="close" size={24} color="#666" />
+                            <Ionicons name="close" size={24} color={colors.textSecondary} />
                         </TouchableOpacity>
                     </View>
 
@@ -444,22 +457,22 @@ export default function MapScreen({ navigation }) {
                                     setActiveModal(null);
                                 }}
                             >
-                                <Text style={styles.optionText}>{option.label}</Text>
+                                <Text style={[styles.optionText, { color: colors.text }]}>{option.label}</Text>
                                 {filters.maxDistance === option.value && (
-                                    <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
+                                    <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
                                 )}
                             </TouchableOpacity>
                         ))}
                     </View>
 
                     <TouchableOpacity
-                        style={styles.clearButton}
+                        style={[styles.clearButton, { borderColor: colors.border, backgroundColor: colors.background }]}
                         onPress={() => {
                             setFilters({ ...filters, maxDistance: null });
                             setActiveModal(null);
                         }}
                     >
-                        <Text style={styles.clearButtonText}>Temizle</Text>
+                        <Text style={[styles.clearButtonText, { color: colors.textSecondary }]}>Temizle</Text>
                     </TouchableOpacity>
                 </View>
             </TouchableOpacity>
@@ -478,11 +491,11 @@ export default function MapScreen({ navigation }) {
                 activeOpacity={1}
                 onPress={() => setActiveModal(null)}
             >
-                <View style={styles.modalContent}>
-                    <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Özellikler</Text>
+                <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+                    <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>Özellikler</Text>
                         <TouchableOpacity onPress={() => setActiveModal(null)}>
-                            <Ionicons name="close" size={24} color="#666" />
+                            <Ionicons name="close" size={24} color={colors.textSecondary} />
                         </TouchableOpacity>
                     </View>
 
@@ -499,13 +512,13 @@ export default function MapScreen({ navigation }) {
                                 onPress={() => toggleFeature(option.value)}
                             >
                                 <View style={styles.optionLeft}>
-                                    <Ionicons name={option.icon} size={20} color="#666" style={{ marginRight: 12 }} />
-                                    <Text style={styles.optionText}>{option.label}</Text>
+                                    <Ionicons name={option.icon} size={20} color={colors.textSecondary} style={{ marginRight: 12 }} />
+                                    <Text style={[styles.optionText, { color: colors.text }]}>{option.label}</Text>
                                 </View>
                                 {filters.features.includes(option.value) ? (
-                                    <Ionicons name="checkbox" size={24} color="#0066FF" />
+                                    <Ionicons name="checkbox" size={24} color={colors.primary} />
                                 ) : (
-                                    <Ionicons name="square-outline" size={24} color="#CCC" />
+                                    <Ionicons name="square-outline" size={24} color={colors.border} />
                                 )}
                             </TouchableOpacity>
                         ))}
@@ -513,12 +526,12 @@ export default function MapScreen({ navigation }) {
 
                     <View style={styles.modalActions}>
                         <TouchableOpacity
-                            style={styles.clearButton}
+                            style={[styles.clearButton, { borderColor: colors.border, backgroundColor: colors.background }]}
                             onPress={() => {
                                 setFilters({ ...filters, features: [] });
                             }}
                         >
-                            <Text style={styles.clearButtonText}>Temizle</Text>
+                            <Text style={[styles.clearButtonText, { color: colors.textSecondary }]}>Temizle</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.applyButton}
@@ -544,16 +557,16 @@ export default function MapScreen({ navigation }) {
                 activeOpacity={1}
                 onPress={() => setActiveModal(null)}
             >
-                <View style={styles.modalContent}>
-                    <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Sıralama ve Filtreler</Text>
+                <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+                    <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>Sıralama ve Filtreler</Text>
                         <TouchableOpacity onPress={() => setActiveModal(null)}>
-                            <Ionicons name="close" size={24} color="#666" />
+                            <Ionicons name="close" size={24} color={colors.textSecondary} />
                         </TouchableOpacity>
                     </View>
 
                     <View style={styles.modalBody}>
-                        <Text style={styles.sectionTitle}>SIRALAMA</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>SIRALAMA</Text>
                         {[
                             { label: 'Mesafeye Göre', value: 'distance', icon: 'navigate-outline' },
                             { label: 'Fiyata Göre', value: 'price', icon: 'cash-outline' },
@@ -567,11 +580,11 @@ export default function MapScreen({ navigation }) {
                                 }}
                             >
                                 <View style={styles.optionLeft}>
-                                    <Ionicons name={option.icon} size={20} color="#666" style={{ marginRight: 12 }} />
-                                    <Text style={styles.optionText}>{option.label}</Text>
+                                    <Ionicons name={option.icon} size={20} color={colors.textSecondary} style={{ marginRight: 12 }} />
+                                    <Text style={[styles.optionText, { color: colors.text }]}>{option.label}</Text>
                                 </View>
                                 {filters.sortBy === option.value && (
-                                    <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
+                                    <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
                                 )}
                             </TouchableOpacity>
                         ))}
@@ -866,18 +879,18 @@ export default function MapScreen({ navigation }) {
 
                     <View style={styles.cardDetails}>
                         <View style={styles.detailItem}>
-                            <Text style={styles.detailLabel}>Mesafe</Text>
-                            <Text style={styles.detailValue}>{selectedLot.distance}</Text>
+                            <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Mesafe</Text>
+                            <Text style={[styles.detailValue, { color: colors.text }]}>{selectedLot.distance}</Text>
                         </View>
                         <View style={styles.detailItem}>
-                            <Text style={styles.detailLabel}>Ücret Bilgisi</Text>
-                            <Text style={styles.detailValue}>{selectedLot.price}₺/saat</Text>
+                            <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Ücret Bilgisi</Text>
+                            <Text style={[styles.detailValue, { color: colors.text }]}>{selectedLot.price}₺/saat</Text>
                         </View>
                         <View style={styles.detailItem}>
-                            <Text style={styles.detailLabel}>Özellikler</Text>
+                            <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Özellikler</Text>
                             <View style={styles.featuresRow}>
-                                <Ionicons name="wifi-outline" size={16} color="#666" style={{ marginRight: 4 }} />
-                                <Ionicons name="videocam-outline" size={16} color="#666" />
+                                <Ionicons name="wifi-outline" size={16} color={colors.textSecondary} style={{ marginRight: 4 }} />
+                                <Ionicons name="videocam-outline" size={16} color={colors.textSecondary} />
                             </View>
                         </View>
                     </View>
@@ -994,7 +1007,6 @@ const styles = StyleSheet.create({
         marginLeft: 4,
         fontSize: 14,
         fontWeight: '500',
-        color: '#333',
     },
     filterChipActive: {
         backgroundColor: '#E3F2FD',
@@ -1019,7 +1031,6 @@ const styles = StyleSheet.create({
     },
     resultsText: {
         fontSize: 14,
-        color: '#666',
         fontWeight: '500',
     },
     clearFiltersText: {
@@ -1050,7 +1061,6 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#000',
     },
     modalBody: {
         padding: 20,
@@ -1058,7 +1068,6 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#999',
         marginBottom: 12,
         letterSpacing: 1,
     },
@@ -1077,7 +1086,6 @@ const styles = StyleSheet.create({
     },
     optionText: {
         fontSize: 16,
-        color: '#333',
     },
     clearButton: {
         margin: 20,
@@ -1091,7 +1099,6 @@ const styles = StyleSheet.create({
     clearButtonText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#666',
     },
     modalActions: {
         flexDirection: 'row',
@@ -1149,11 +1156,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: 'white',
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         padding: 24,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: -2 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -1191,7 +1196,6 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#000',
         flex: 1,
     },
     ratingContainer: {
@@ -1202,7 +1206,6 @@ const styles = StyleSheet.create({
         marginLeft: 4,
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#333',
     },
     cardDetails: {
         flexDirection: 'row',
@@ -1214,13 +1217,11 @@ const styles = StyleSheet.create({
     },
     detailLabel: {
         fontSize: 12,
-        color: '#666',
         marginBottom: 4,
     },
     detailValue: {
         fontSize: 16,
         fontWeight: '500',
-        color: '#333',
     },
     featuresRow: {
         flexDirection: 'row',
@@ -1235,7 +1236,6 @@ const styles = StyleSheet.create({
     },
     occupancyLabel: {
         fontSize: 14,
-        color: '#666',
     },
     occupancyValue: {
         fontSize: 14,
@@ -1266,7 +1266,6 @@ const styles = StyleSheet.create({
     },
     navButtonText: {
         marginLeft: 8,
-        color: '#000',
         fontSize: 16,
         fontWeight: '600',
     },
@@ -1292,11 +1291,9 @@ const styles = StyleSheet.create({
         right: 16,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'white',
         paddingHorizontal: 12,
         paddingVertical: 8,
         borderRadius: 20,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -1312,7 +1309,6 @@ const styles = StyleSheet.create({
     liveUpdateText: {
         flex: 1,
         fontSize: 12,
-        color: '#666',
         fontWeight: '500',
     },
     refreshButton: {

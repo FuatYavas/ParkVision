@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
     },
     content: {
         flex: 1,
@@ -75,13 +74,11 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#000',
         marginBottom: 12,
         textAlign: 'center',
     },
     subtitle: {
         fontSize: 16,
-        color: '#666',
         textAlign: 'center',
         marginBottom: 32,
         lineHeight: 24,

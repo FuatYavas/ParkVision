@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
     },
     map: {
         flex: 1,
@@ -302,7 +301,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 12,
         padding: 16,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -320,7 +318,6 @@ const styles = StyleSheet.create({
     walkingInfoValue: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
         marginLeft: 8,
     },
     walkingInfoDivider: {
@@ -333,7 +330,6 @@ const styles = StyleSheet.create({
         padding: 20,
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: -2 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -356,7 +352,6 @@ const styles = StyleSheet.create({
     locationTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#000',
         marginBottom: 4,
     },
     spotInfo: {
@@ -367,7 +362,6 @@ const styles = StyleSheet.create({
     },
     timeInfo: {
         fontSize: 13,
-        color: '#666',
     },
     primaryButton: {
         backgroundColor: '#0066FF',

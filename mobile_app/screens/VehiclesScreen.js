@@ -315,7 +315,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
     },
     loadingContainer: {
         flex: 1,
@@ -350,13 +349,11 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     vehicleCard: {
-        backgroundColor: '#fff',
         borderRadius: 16,
         padding: 16,
         marginBottom: 16,
         flexDirection: 'row',
         alignItems: 'center',
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -377,12 +374,10 @@ const styles = StyleSheet.create({
     vehiclePlate: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
         marginBottom: 4,
     },
     vehicleDetails: {
         fontSize: 14,
-        color: '#333',
         marginBottom: 2,
     },
     vehicleColor: {
@@ -418,7 +413,6 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#000',
     },
     inputGroup: {
         marginBottom: 20,
@@ -426,17 +420,13 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#333',
         marginBottom: 8,
     },
     input: {
-        backgroundColor: '#F5F7FA',
         borderRadius: 12,
         padding: 16,
         fontSize: 16,
-        color: '#000',
         borderWidth: 1,
-        borderColor: '#E0E0E0',
     },
     typeButtons: {
         flexDirection: 'row',
@@ -457,7 +447,6 @@ const styles = StyleSheet.create({
     },
     typeButtonText: {
         fontSize: 14,
-        color: '#666',
         fontWeight: '600',
     },
     typeButtonTextActive: {

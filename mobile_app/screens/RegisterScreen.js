@@ -196,7 +196,6 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 16,
-        color: '#666',
     },
     form: {
         width: '100%',
@@ -218,7 +217,6 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         fontSize: 16,
-        color: '#333',
     },
     registerButton: {
         backgroundColor: '#0066FF',
@@ -246,7 +244,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     loginText: {
-        color: '#666',
         fontSize: 14,
     },
     loginLink: {

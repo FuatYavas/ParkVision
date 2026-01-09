@@ -155,11 +155,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 8,
-        color: '#000',
     },
     subtitle: {
         fontSize: 16,
-        color: '#666',
         textAlign: 'center',
         marginBottom: 32,
     },
@@ -170,7 +168,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         marginBottom: 8,
-        color: '#333',
     },
     input: {
         backgroundColor: '#fff',
@@ -229,7 +226,6 @@ const styles = StyleSheet.create({
     },
     dividerText: {
         marginHorizontal: 16,
-        color: '#666',
         fontSize: 14,
     },
     googleButton: {
@@ -246,7 +242,6 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     googleButtonText: {
-        color: '#333',
         fontSize: 16,
         fontWeight: '500',
     },
@@ -275,7 +270,6 @@ const styles = StyleSheet.create({
         marginTop: 32,
     },
     footerText: {
-        color: '#666',
         fontSize: 14,
     },
     registerText: {

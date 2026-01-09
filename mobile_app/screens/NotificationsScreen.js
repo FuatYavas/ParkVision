@@ -283,7 +283,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
     },
     content: {
         flex: 1,
@@ -313,7 +312,6 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#666',
         marginBottom: 8,
         marginLeft: 4,
     },
@@ -351,12 +349,10 @@ const styles = StyleSheet.create({
     settingLabel: {
         fontSize: 15,
         fontWeight: '600',
-        color: '#333',
         marginBottom: 2,
     },
     settingDescription: {
         fontSize: 13,
-        color: '#666',
     },
     textDisabled: {
         color: '#CCC',
@@ -371,7 +367,6 @@ const styles = StyleSheet.create({
     infoText: {
         flex: 1,
         fontSize: 13,
-        color: '#666',
         marginLeft: 12,
         lineHeight: 18,
     },

@@ -278,7 +278,6 @@ const styles = StyleSheet.create({
         paddingTop: 12,
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
         paddingBottom: 12,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -290,7 +289,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#000',
         flex: 1,
         textAlign: 'center',
         marginHorizontal: 8,
@@ -300,7 +298,6 @@ const styles = StyleSheet.create({
         margin: 16,
         borderRadius: 20,
         padding: 20,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 12,
@@ -323,18 +320,15 @@ const styles = StyleSheet.create({
     timeText: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#000',
         marginTop: 8,
     },
     distanceText: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#000',
         marginTop: 8,
     },
     infoLabel: {
         fontSize: 12,
-        color: '#666',
         marginTop: 4,
     },
     bottomContainer: {
@@ -342,7 +336,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: -4 },
         shadowOpacity: 0.1,
         shadowRadius: 12,
@@ -391,7 +384,6 @@ const styles = StyleSheet.create({
         borderColor: 'white',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 3,

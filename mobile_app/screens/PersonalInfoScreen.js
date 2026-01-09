@@ -278,7 +278,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
     },
     loadingContainer: {
         flex: 1,
@@ -315,7 +314,6 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#333',
         marginBottom: 8,
     },
     input: {
@@ -323,7 +321,6 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 16,
         fontSize: 16,
-        color: '#000',
         borderWidth: 1,
         borderColor: '#E0E0E0',
     },

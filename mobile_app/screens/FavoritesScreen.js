@@ -89,6 +89,21 @@ export default function FavoritesScreen({ navigation }) {
         return 'Yoğun';
     };
 
+    const getParkingImage = (type) => {
+        const images = {
+            historic: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?q=80&w=800',
+            nature: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800',
+            education: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800',
+            shopping: 'https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?q=80&w=800',
+            hospital: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800',
+            airport: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=800',
+            residential: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800',
+            municipal: 'https://images.unsplash.com/photo-1590674899505-1c5c4195e969?q=80&w=800',
+            default: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?q=80&w=800'
+        };
+        return images[type] || images.default;
+    };
+
     const renderFavoriteItem = ({ item }) => {
         const emptySpots = item.capacity - item.current_occupancy;
         const occupancy = Math.round((item.current_occupancy / item.capacity) * 100);
@@ -110,8 +125,9 @@ export default function FavoritesScreen({ navigation }) {
                 }})}
             >
                 <Image 
-                    source={{ uri: 'https://images.unsplash.com/photo-1590674899505-1c5c4195e969?q=80&w=200&auto=format&fit=crop' }}
+                    source={{ uri: getParkingImage(item.type) }}
                     style={styles.cardImage}
+                    resizeMode="cover"
                 />
                 <View style={styles.cardContent}>
                     <View style={styles.cardHeader}>
@@ -177,7 +193,7 @@ export default function FavoritesScreen({ navigation }) {
             </Text>
             <TouchableOpacity 
                 style={[styles.exploreButton, { backgroundColor: colors.primary }]}
-                onPress={() => navigation.navigate('Main', { screen: 'Map' })}
+                onPress={() => navigation.navigate('Map')}
             >
                 <Ionicons name="map-outline" size={20} color="white" />
                 <Text style={styles.exploreButtonText}>Otoparkları Keşfet</Text>
@@ -231,7 +247,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
     },
     listContent: {
         padding: 16,
@@ -241,7 +256,6 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         marginBottom: 16,
         overflow: 'hidden',
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -249,7 +263,9 @@ const styles = StyleSheet.create({
     },
     cardImage: {
         width: '100%',
-        height: 120,
+        height: 150,
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
     },
     cardContent: {
         padding: 16,
@@ -263,7 +279,6 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#000',
         flex: 1,
         marginRight: 8,
     },
@@ -272,7 +287,6 @@ const styles = StyleSheet.create({
     },
     cardAddress: {
         fontSize: 13,
-        color: '#666',
         marginBottom: 12,
     },
     cardStats: {
@@ -292,7 +306,6 @@ const styles = StyleSheet.create({
     },
     statText: {
         fontSize: 13,
-        color: '#666',
         marginLeft: 4,
     },
     cardActions: {
@@ -338,12 +351,10 @@ const styles = StyleSheet.create({
     emptyTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333',
         marginBottom: 8,
     },
     emptySubtitle: {
         fontSize: 14,
-        color: '#666',
         textAlign: 'center',
         marginBottom: 24,
         lineHeight: 20,

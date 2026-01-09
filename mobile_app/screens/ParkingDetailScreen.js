@@ -237,7 +237,6 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         overflow: 'hidden',
         marginBottom: 16,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
@@ -316,7 +315,6 @@ const styles = StyleSheet.create({
     },
     updateText: {
         fontSize: 12,
-        color: '#666',
     },
     legendCard: {
         backgroundColor: 'white',
@@ -327,7 +325,6 @@ const styles = StyleSheet.create({
     legendTitle: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#333',
         marginBottom: 12,
     },
     legendRow: {
@@ -350,7 +347,6 @@ const styles = StyleSheet.create({
     },
     legendText: {
         fontSize: 14,
-        color: '#333',
         fontWeight: '500',
     },
     statsRow: {
@@ -364,7 +360,6 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 16,
         alignItems: 'center',
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
@@ -373,12 +368,10 @@ const styles = StyleSheet.create({
     statValue: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#333',
         marginTop: 8,
     },
     statLabel: {
         fontSize: 12,
-        color: '#666',
         marginTop: 4,
     },
     infoCard: {
@@ -402,7 +395,6 @@ const styles = StyleSheet.create({
     infoText: {
         flex: 1,
         fontSize: 14,
-        color: '#333',
     },
     infoDivider: {
         height: 1,

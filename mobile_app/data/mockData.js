@@ -234,11 +234,37 @@ export const mockReservations = [
 ];
 
 // Kullanıcı konumuna göre dinamik otoparklar oluştur
-const parkingNames = [
-    "Merkez Otopark", "City Park", "Metro Otopark", "Plaza Otopark",
-    "Belediye Otoparkı", "Hastane Otoparkı", "Çarşı Otopark", "Stadyum Otopark",
-    "Terminal Otopark", "AVM Otoparkı", "İş Merkezi Otoparkı", "Kültür Merkezi Otopark"
+// Elazığ yöresine özgü lokasyonlar
+const elazigParkingNames = [
+    { prefix: "Harput", suffix: "Kalesi Otoparkı", type: "historic" },
+    { prefix: "Hazar Gölü", suffix: "Park Alanı", type: "nature" },
+    { prefix: "Fırat Üniversitesi", suffix: "Kampüs Otoparkı", type: "education" },
+    { prefix: "Sürsürü", suffix: "Merkez Otopark", type: "center" },
+    { prefix: "İzzetpaşa", suffix: "Kapalı Otopark", type: "covered" },
+    { prefix: "Rızaiye", suffix: "Park Yeri", type: "neighborhood" },
+    { prefix: "Eski Elazığ", suffix: "Açık Otopark", type: "outdoor" },
+    { prefix: "Cumhuriyet Caddesi", suffix: "Park", type: "street" },
+    { prefix: "Maden", suffix: "İlçe Otoparkı", type: "district" },
+    { prefix: "Keban Barajı", suffix: "Tesis Parkı", type: "facility" },
+    { prefix: "Sivrice", suffix: "Meydan Otoparkı", type: "square" },
+    { prefix: "Baskil", suffix: "Belediye Parkı", type: "municipal" }
 ];
+
+// Farklı otopark tipleri için özellikler
+const parkingTypeFeatures = {
+    historic: ['camera', 'security', 'outdoor'],
+    nature: ['outdoor', 'camera'],
+    education: ['camera', 'security', 'covered'],
+    center: ['camera', 'security', 'covered', 'ev_charging', 'wifi'],
+    covered: ['camera', 'security', 'covered', 'valet'],
+    neighborhood: ['camera', 'security'],
+    outdoor: ['camera', 'outdoor'],
+    street: ['camera'],
+    district: ['camera', 'security', 'outdoor'],
+    facility: ['camera', 'security', 'covered'],
+    square: ['camera', 'outdoor', 'wifi'],
+    municipal: ['camera', 'security', '24/7']
+};
 
 const featuresOptions = [
     ['camera', 'security'],
@@ -251,6 +277,13 @@ const featuresOptions = [
 
 export const generateDynamicParkingLots = (userLat, userLon, count = 8) => {
     const lots = [];
+    
+    // Farklı doluluk kategorileri tanımla
+    const occupancyCategories = [
+        { min: 0.1, max: 0.35, label: 'Boş' },      // Yeşil - %10-35 dolu
+        { min: 0.4, max: 0.65, label: 'Orta' },     // Sarı - %40-65 dolu
+        { min: 0.7, max: 0.95, label: 'Dolu' }      // Kırmızı - %70-95 dolu
+    ];
 
     for (let i = 0; i < count; i++) {
         // Kullanıcı etrafında rastgele konum (0.5-5 km yarıçapında)
@@ -259,22 +292,70 @@ export const generateDynamicParkingLots = (userLat, userLon, count = 8) => {
         const lat = userLat + distance * Math.cos(angle);
         const lon = userLon + distance * Math.sin(angle);
 
-        const capacity = 50 + Math.floor(Math.random() * 200);
-        const occupancyRate = 0.3 + Math.random() * 0.6; // %30-90 doluluk
+        // Kapasite çeşitliliği
+        const capacityOptions = [40, 60, 80, 100, 120, 150, 180, 200, 250];
+        const capacity = capacityOptions[Math.floor(Math.random() * capacityOptions.length)];
+        
+        // Her otoparka rastgele doluluk kategorisi ata
+        const category = occupancyCategories[Math.floor(Math.random() * occupancyCategories.length)];
+        const occupancyRate = category.min + Math.random() * (category.max - category.min);
+
+        // Yön hesapla (kuzey, güney, doğu, batı)
+        let direction = '';
+        if (lat > userLat + 0.01) direction = 'Kuzey ';
+        else if (lat < userLat - 0.01) direction = 'Güney ';
+        if (lon > userLon + 0.01) direction += 'Doğu';
+        else if (lon < userLon - 0.01) direction += 'Batı';
+        direction = direction.trim() || '';
+
+        // İsim oluştur - Elazığ'a özgü
+        const nameTemplate = elazigParkingNames[i % elazigParkingNames.length];
+        const fullName = direction 
+            ? `${direction} ${nameTemplate.prefix} ${nameTemplate.suffix}`.trim()
+            : `${nameTemplate.prefix} ${nameTemplate.suffix}`;
+
+        // Fiyat çeşitliliği (otopark tipine göre)
+        const priceRanges = {
+            historic: [8, 12],
+            nature: [5, 10],
+            education: [8, 15],
+            center: [15, 25],
+            covered: [18, 30],
+            neighborhood: [10, 15],
+            outdoor: [5, 12],
+            street: [8, 15],
+            district: [10, 18],
+            facility: [12, 20],
+            square: [10, 15],
+            municipal: [8, 12]
+        };
+        
+        const priceRange = priceRanges[nameTemplate.type] || [10, 20];
+        const hourlyRate = priceRange[0] + Math.floor(Math.random() * (priceRange[1] - priceRange[0]));
+
+        // Rating çeşitliliği
+        const ratings = [3.5, 3.8, 4.0, 4.2, 4.5, 4.7, 4.8];
+        const rating = ratings[Math.floor(Math.random() * ratings.length)];
+
+        // Doluluk yüzdesini hesapla
+        const currentOccupancy = Math.floor(capacity * occupancyRate);
+        const occupancyPercent = Math.round((currentOccupancy / capacity) * 100);
 
         lots.push({
             id: 100 + i,
-            name: parkingNames[i % parkingNames.length],
+            name: fullName,
             latitude: lat,
             longitude: lon,
             capacity: capacity,
-            current_occupancy: Math.floor(capacity * occupancyRate),
-            hourly_rate: 5 + Math.floor(Math.random() * 20),
+            current_occupancy: currentOccupancy,
+            occupancy: occupancyPercent,
+            hourly_rate: hourlyRate,
             is_active: true,
-            address: `Kullanıcı Yakını #${i + 1}`,
-            features: featuresOptions[Math.floor(Math.random() * featuresOptions.length)],
-            rating: (3.5 + Math.random() * 1.5).toFixed(1),
-            distance: null // Dinamik hesaplanacak
+            address: `${nameTemplate.prefix} Mahallesi, ${(distance * 111).toFixed(1)} km`,
+            features: parkingTypeFeatures[nameTemplate.type] || featuresOptions[0],
+            rating: rating.toFixed(1),
+            distance: `${(distance * 111).toFixed(1)} km`,
+            type: nameTemplate.type
         });
     }
 

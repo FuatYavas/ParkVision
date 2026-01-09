@@ -184,7 +184,6 @@ export default function ProfileScreen({ navigation }) {
             items: [
                 { icon: 'notifications-outline', label: 'Bildirimler', route: 'Notifications', active: true },
                 { icon: 'moon-outline', label: 'Görünüm', value: getThemeLabel(settings.theme), route: 'Appearance', active: true },
-                { icon: 'globe-outline', label: 'Dil', value: getLanguageLabel(settings.language), route: 'Language', active: true },
             ]
         }
     ];
@@ -329,7 +328,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#000',
     },
     editButton: {
         fontSize: 16,
@@ -354,7 +352,6 @@ const styles = StyleSheet.create({
     avatarContainer: {
         position: 'relative',
         marginBottom: 16,
-        shadowColor: "#000",
         shadowOffset: {
             width: 0,
             height: 4,
@@ -379,12 +376,10 @@ const styles = StyleSheet.create({
     name: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#000',
         marginBottom: 4,
     },
     email: {
         fontSize: 14,
-        color: '#666',
     },
     section: {
         marginBottom: 24,
@@ -428,7 +423,6 @@ const styles = StyleSheet.create({
     },
     menuItemLabel: {
         fontSize: 16,
-        color: '#333',
     },
     menuItemDisabled: {
         opacity: 0.5,
@@ -488,6 +482,5 @@ const styles = StyleSheet.create({
     },
     searchParkingSubtitle: {
         fontSize: 12,
-        color: '#666',
     },
 });
