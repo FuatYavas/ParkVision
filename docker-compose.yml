@@ -23,7 +23,7 @@ services:
       - ./cv_module:/app
       - ./test_images:/app/test_images
     environment:
-      - ROBOFLOW_API_KEY=u3Zw1v8EkVB6S2Qd8JrL
+      - ROBOFLOW_API_KEY=0Zmk2YMfrmOASiUGMQSG
       - BACKEND_API_URL=http://backend:8000
       - PROCESSING_INTERVAL=2.0
       - CONFIDENCE_THRESHOLD=0.5
