@@ -122,7 +122,12 @@ export default function ReservationScreen({ route, navigation }) {
             Alert.alert('Başarılı', `Park yeri ${spotLabel} rezerve edildi!`, [
                 {
                     text: 'Tamam',
-                    onPress: () => navigation.navigate('Main', { screen: 'FindMyCar' })
+                    onPress: () => {
+                        navigation.navigate('Main', { 
+                            screen: 'FindMyCar',
+                            params: { refreshReservations: true }
+                        });
+                    }
                 }
             ]);
         } catch (error) {
@@ -141,7 +146,12 @@ export default function ReservationScreen({ route, navigation }) {
             Alert.alert('Başarılı', `Park yeri ${spotLabel} rezerve edildi!`, [
                 {
                     text: 'Tamam',
-                    onPress: () => navigation.navigate('Main', { screen: 'FindMyCar' })
+                    onPress: () => {
+                        navigation.navigate('Main', { 
+                            screen: 'FindMyCar',
+                            params: { refreshReservations: true }
+                        });
+                    }
                 }
             ]);
         }

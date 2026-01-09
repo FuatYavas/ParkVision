@@ -177,7 +177,7 @@ export default function VehiclesScreen({ navigation }) {
             ) : vehicles.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Ionicons name="car-outline" size={64} color="#ccc" />
-                    <Text style={styles.emptyText}>Henüz araç eklenmedi</Text>
+                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Henüz araç eklenmedi</Text>
                     <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
                         <Text style={styles.addButtonText}>İlk Aracınızı Ekleyin</Text>
                     </TouchableOpacity>

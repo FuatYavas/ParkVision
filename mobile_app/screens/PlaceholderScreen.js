@@ -19,8 +19,8 @@ export default function PlaceholderScreen({ route, navigation }) {
                 <View style={styles.iconContainer}>
                     <Ionicons name="construct-outline" size={64} color="#0066FF" />
                 </View>
-                <Text style={styles.title}>Yapım Aşamasında</Text>
-                <Text style={styles.subtitle}>
+                <Text style={[styles.title, { color: colors.text }]}>Yapım Aşamasında</Text>
+                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
                     "{title}" sayfası şu anda geliştirilme aşamasındadır. Çok yakında hizmetinizde olacak.
                 </Text>
 

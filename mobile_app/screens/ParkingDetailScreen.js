@@ -113,13 +113,13 @@ export default function ParkingDetailScreen({ route, navigation }) {
                             <View style={[styles.legendBox, { borderColor: '#22C55E' }]}>
                                 <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
                             </View>
-                            <Text style={styles.legendText}>Boş ({emptyCount})</Text>
+                            <Text style={[styles.legendText, { color: colors.text }]}>Boş ({emptyCount})</Text>
                         </View>
                         <View style={styles.legendItem}>
                             <View style={[styles.legendBox, { borderColor: '#EF4444' }]}>
                                 <Ionicons name="car" size={16} color="#EF4444" />
                             </View>
-                            <Text style={styles.legendText}>Dolu ({occupiedCount})</Text>
+                            <Text style={[styles.legendText, { color: colors.text }]}>Dolu ({occupiedCount})</Text>
                         </View>
                     </View>
                 </View>

@@ -218,7 +218,7 @@ export default function NotificationsScreen({ navigation }) {
 
                 {notificationCategories.map((category) => (
                     <View key={category.title} style={styles.section}>
-                        <Text style={styles.sectionTitle}>{category.title}</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{category.title}</Text>
                         <View style={[styles.sectionContent, { backgroundColor: colors.card }]}>
                             {category.items.map(renderSettingItem)}
                         </View>

@@ -43,12 +43,16 @@ export default function FindMyCarScreen({ route, navigation }) {
     const [userLocation, setUserLocation] = useState(null);
     const [showRoute, setShowRoute] = useState(false);
     const [walkingInfo, setWalkingInfo] = useState({ distance: 0, duration: 0 });
+    const [activeReservation, setActiveReservation] = useState(null);
     const mapRef = React.useRef(null);
 
-    // Get reservation data from params
-    const reservation = route.params?.reservation;
-    const parkingLot = reservation?.parkingLot || { name: 'Otopark', latitude: 38.6791, longitude: 39.2264 };
-    const spotNumber = reservation?.spotNumber || 'A1';
+    // Use active reservation data
+    const parkingLot = activeReservation ? {
+        name: activeReservation.parking_lot_name,
+        latitude: activeReservation.latitude,
+        longitude: activeReservation.longitude
+    } : { name: 'Otopark', latitude: 38.6791, longitude: 39.2264 };
+    const spotNumber = activeReservation?.spot_number || 'A1';
 
     // Use actual parking location
     const parkedLocation = {
@@ -65,7 +69,32 @@ export default function FindMyCarScreen({ route, navigation }) {
 
     useEffect(() => {
         getUserLocation();
+        loadActiveReservation();
     }, []);
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            loadActiveReservation();
+        });
+        return unsubscribe;
+    }, [navigation]);
+
+    const loadActiveReservation = async () => {
+        try {
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            const stored = await AsyncStorage.getItem('user_reservations');
+            if (stored) {
+                const reservations = JSON.parse(stored);
+                // Get the most recent active reservation
+                const active = reservations
+                    .filter(r => r.status === 'active')
+                    .sort((a, b) => new Date(b.start_time) - new Date(a.start_time))[0];
+                setActiveReservation(active || null);
+            }
+        } catch (error) {
+            console.error('Failed to load reservation:', error);
+        }
+    };
 
     useEffect(() => {
         if (userLocation && showRoute) {
@@ -127,6 +156,23 @@ export default function FindMyCarScreen({ route, navigation }) {
         return `${km.toFixed(1)} km`;
     };
 
+    const formatParkingTime = (timestamp) => {
+        if (!timestamp) return 'Az önce';
+        const now = new Date();
+        const parkedTime = new Date(timestamp);
+        const diffMs = now - parkedTime;
+        const diffMins = Math.floor(diffMs / 60000);
+        
+        if (diffMins < 1) return 'Az önce';
+        if (diffMins < 60) return `${diffMins} dakika önce`;
+        
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours} saat önce`;
+        
+        const diffDays = Math.floor(diffHours / 24);
+        return `${diffDays} gün önce`;
+    };
+
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <SafeAreaView style={[styles.headerContainer, { backgroundColor: colors.card }]}>
@@ -139,6 +185,25 @@ export default function FindMyCarScreen({ route, navigation }) {
                 </View>
             </SafeAreaView>
 
+            {!activeReservation ? (
+                <View style={styles.emptyContainer}>
+                    <View style={[styles.emptyIconContainer, { backgroundColor: isDark ? '#2C2C2E' : '#F5F5F5' }]}>
+                        <Ionicons name="car-outline" size={64} color={colors.textSecondary} />
+                    </View>
+                    <Text style={[styles.emptyTitle, { color: colors.text }]}>Aktif Rezervasyon Yok</Text>
+                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                        Park yeri rezerve ettiğinizde, aracınızın konumunu burada görebilirsiniz.
+                    </Text>
+                    <TouchableOpacity
+                        style={[styles.findParkingButton, { backgroundColor: colors.primary }]}
+                        onPress={() => navigation.navigate('Main', { screen: 'Map' })}
+                    >
+                        <Ionicons name="map-outline" size={20} color="white" />
+                        <Text style={styles.findParkingButtonText}>Otopark Bul</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <>
             <MapView
                 ref={mapRef}
                 style={styles.map}
@@ -197,7 +262,9 @@ export default function FindMyCarScreen({ route, navigation }) {
                     <View style={styles.textInfo}>
                         <Text style={[styles.locationTitle, { color: colors.text }]}>{parkingLot.name}</Text>
                         <Text style={[styles.spotInfo, { color: colors.primary }]}>Park Yeri: {spotNumber}</Text>
-                        <Text style={[styles.timeInfo, { color: colors.textSecondary }]}>Park Edildi: Az önce</Text>
+                        <Text style={[styles.timeInfo, { color: colors.textSecondary }]}>
+                            Park Edildi: {formatParkingTime(activeReservation?.start_time)}
+                        </Text>
                     </View>
                 </View>
 
@@ -227,6 +294,8 @@ export default function FindMyCarScreen({ route, navigation }) {
                     <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>Park Konumunu Güncelle</Text>
                 </TouchableOpacity>
             </View>
+            </>
+            )}
         </View>
     );
 }
@@ -388,6 +457,44 @@ const styles = StyleSheet.create({
     },
     secondaryButtonText: {
         color: '#0066FF',
+        fontSize: 16,
+        fontWeight: '600',
+        marginLeft: 8,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 32,
+    },
+    emptyIconContainer: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 8,
+    },
+    emptyText: {
+        fontSize: 14,
+        textAlign: 'center',
+        marginBottom: 24,
+        lineHeight: 20,
+    },
+    findParkingButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 12,
+    },
+    findParkingButtonText: {
+        color: 'white',
         fontSize: 16,
         fontWeight: '600',
         marginLeft: 8,

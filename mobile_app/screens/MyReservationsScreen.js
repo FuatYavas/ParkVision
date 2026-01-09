@@ -209,7 +209,7 @@ export default function MyReservationsScreen({ navigation }) {
                         {/* Active Reservations */}
                         {activeReservations.length > 0 && (
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>AKTIF REZERVASYONLAR</Text>
+                                <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>AKTIF REZERVASYONLAR</Text>
                                 {activeReservations.map((reservation) => (
                                     <View key={reservation.id} style={[styles.reservationCard, { backgroundColor: colors.card, shadowColor: colors.text }]}>
                                         <View style={styles.cardHeader}>
@@ -272,7 +272,7 @@ export default function MyReservationsScreen({ navigation }) {
                         {/* Past Reservations */}
                         {pastReservations.length > 0 && (
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>GECMIS REZERVASYONLAR</Text>
+                                <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>GECMIS REZERVASYONLAR</Text>
                                 {pastReservations.map((reservation) => (
                                     <View key={reservation.id} style={[styles.reservationCard, styles.pastCard, { backgroundColor: colors.card }]}>
                                         <Text style={[styles.parkingName, { color: colors.text }]}>{reservation.parkingLotName}</Text>

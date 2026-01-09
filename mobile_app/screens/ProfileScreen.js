@@ -223,7 +223,7 @@ export default function ProfileScreen({ navigation }) {
             <View style={[styles.header, { backgroundColor: colors.background }]}>
                 <Text style={[styles.headerTitle, { color: colors.text }]}>Profil</Text>
                 <TouchableOpacity onPress={() => navigation.navigate('PersonalInfo')}>
-                    <Text style={styles.editButton}>Düzenle</Text>
+                    <Text style={[styles.editButton, { color: colors.primary }]}>Düzenle</Text>
                 </TouchableOpacity>
             </View>
 
@@ -261,7 +261,7 @@ export default function ProfileScreen({ navigation }) {
                 {/* Menu Items */}
                 {menuItems.map((section, index) => (
                     <View key={index} style={styles.section}>
-                        <Text style={styles.sectionTitle}>{section.title}</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{section.title}</Text>
                         <View style={[styles.sectionContent, { backgroundColor: colors.card }]}>
                             {section.items.map((item, itemIndex) => (
                                 <TouchableOpacity

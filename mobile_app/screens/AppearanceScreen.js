@@ -34,7 +34,7 @@ export default function AppearanceScreen({ navigation }) {
             </View>
 
             <View style={styles.content}>
-                <Text style={styles.sectionTitle}>TEMA SEÇİNİ</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>TEMA SEÇİNİ</Text>
                 <View style={[styles.optionsContainer, { backgroundColor: colors.card }]}>
                     {themeOptions.map((option, index) => (
                         <TouchableOpacity
