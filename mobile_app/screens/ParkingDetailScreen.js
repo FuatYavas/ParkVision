@@ -11,11 +11,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { cvDetectionImages } from '../data/mockData';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const IMAGE_HEIGHT = 280;
 
 export default function ParkingDetailScreen({ route, navigation }) {
+    const { colors, isDark } = useTheme();
     const lot = route.params?.lot || {
         name: 'Örnek Otopark',
         occupancy: 56,
@@ -56,23 +58,23 @@ export default function ParkingDetailScreen({ route, navigation }) {
     }, []);
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color="#000" />
+                    <Ionicons name="chevron-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle} numberOfLines={1}>{lot.name}</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>{lot.name}</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 {/* CV Detection View */}
-                <View style={styles.cvContainer}>
-                    <View style={styles.cvHeader}>
+                <View style={[styles.cvContainer, { backgroundColor: colors.card }]}>
+                    <View style={[styles.cvHeader, { backgroundColor: isDark ? '#1C3A57' : '#F0F7FF', borderBottomColor: colors.border }]}>
                         <View style={styles.cvTitleRow}>
-                            <Ionicons name="videocam" size={20} color="#0066FF" />
-                            <Text style={styles.cvTitle}>CV Algılama Görüntüsü</Text>
+                            <Ionicons name="videocam" size={20} color={colors.primary} />
+                            <Text style={[styles.cvTitle, { color: colors.primary }]}>CV Algılama Görüntüsü</Text>
                         </View>
                         <View style={styles.liveIndicator}>
                             <View style={styles.liveDot} />
@@ -95,17 +97,17 @@ export default function ParkingDetailScreen({ route, navigation }) {
                     </View>
 
                     {/* Update Info */}
-                    <View style={styles.updateInfo}>
-                        <Ionicons name="refresh" size={14} color="#666" />
-                        <Text style={styles.updateText}>
+                    <View style={[styles.updateInfo, { backgroundColor: isDark ? '#1C1C1E' : '#F9FAFB' }]}>
+                        <Ionicons name="refresh" size={14} color={colors.textSecondary} />
+                        <Text style={[styles.updateText, { color: colors.textSecondary }]}>
                             Son güncelleme: {getTimeSinceUpdate()} saniye önce
                         </Text>
                     </View>
                 </View>
 
                 {/* Legend */}
-                <View style={styles.legendCard}>
-                    <Text style={styles.legendTitle}>Gösterge</Text>
+                <View style={[styles.legendCard, { backgroundColor: colors.card }]}>
+                    <Text style={[styles.legendTitle, { color: colors.text }]}>Gösterge</Text>
                     <View style={styles.legendRow}>
                         <View style={styles.legendItem}>
                             <View style={[styles.legendBox, { borderColor: '#22C55E' }]}>
@@ -124,39 +126,39 @@ export default function ParkingDetailScreen({ route, navigation }) {
 
                 {/* Stats */}
                 <View style={styles.statsRow}>
-                    <View style={styles.statCard}>
-                        <Ionicons name="analytics-outline" size={24} color="#0066FF" />
-                        <Text style={styles.statValue}>{occupancyRate}%</Text>
-                        <Text style={styles.statLabel}>Doluluk</Text>
+                    <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+                        <Ionicons name="analytics-outline" size={24} color={colors.primary} />
+                        <Text style={[styles.statValue, { color: colors.text }]}>{occupancyRate}%</Text>
+                        <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Doluluk</Text>
                     </View>
-                    <View style={styles.statCard}>
+                    <View style={[styles.statCard, { backgroundColor: colors.card }]}>
                         <Ionicons name="car-outline" size={24} color="#22C55E" />
-                        <Text style={styles.statValue}>{emptyCount}</Text>
-                        <Text style={styles.statLabel}>Boş Alan</Text>
+                        <Text style={[styles.statValue, { color: colors.text }]}>{emptyCount}</Text>
+                        <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Boş Alan</Text>
                     </View>
-                    <View style={styles.statCard}>
+                    <View style={[styles.statCard, { backgroundColor: colors.card }]}>
                         <Ionicons name="cash-outline" size={24} color="#F59E0B" />
-                        <Text style={styles.statValue}>{lot.hourly_rate || lot.price}₺</Text>
-                        <Text style={styles.statLabel}>Saat</Text>
+                        <Text style={[styles.statValue, { color: colors.text }]}>{lot.hourly_rate || lot.price}₺</Text>
+                        <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Saat</Text>
                     </View>
                 </View>
 
                 {/* Info Card */}
-                <View style={styles.infoCard}>
+                <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
                     <View style={styles.infoRow}>
-                        <View style={styles.infoIconBg}>
-                            <Ionicons name="location-outline" size={20} color="#0066FF" />
+                        <View style={[styles.infoIconBg, { backgroundColor: isDark ? '#1C3A57' : '#F0F7FF' }]}>
+                            <Ionicons name="location-outline" size={20} color={colors.primary} />
                         </View>
-                        <Text style={styles.infoText} numberOfLines={2}>
+                        <Text style={[styles.infoText, { color: colors.text }]} numberOfLines={2}>
                             {lot.address || 'Elazığ Merkez'}
                         </Text>
                     </View>
-                    <View style={styles.infoDivider} />
+                    <View style={[styles.infoDivider, { backgroundColor: colors.border }]} />
                     <View style={styles.infoRow}>
-                        <View style={styles.infoIconBg}>
-                            <Ionicons name="time-outline" size={20} color="#0066FF" />
+                        <View style={[styles.infoIconBg, { backgroundColor: isDark ? '#1C3A57' : '#F0F7FF' }]}>
+                            <Ionicons name="time-outline" size={20} color={colors.primary} />
                         </View>
-                        <Text style={styles.infoText}>
+                        <Text style={[styles.infoText, { color: colors.text }]}>
                             {lot.isOpen || lot.is_active ? '24 Saat Açık' : 'Kapalı'}
                         </Text>
                         <View style={[
@@ -182,16 +184,16 @@ export default function ParkingDetailScreen({ route, navigation }) {
             </ScrollView>
 
             {/* Footer */}
-            <View style={styles.footer}>
+            <View style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
                 <TouchableOpacity
-                    style={styles.navButton}
+                    style={[styles.navButton, { backgroundColor: isDark ? '#1C3A57' : '#E3F2FD' }]}
                     onPress={() => navigation.navigate('Navigation', { lot })}
                 >
-                    <Ionicons name="navigate-outline" size={20} color="#0066FF" />
-                    <Text style={styles.navButtonText}>Yol Tarifi</Text>
+                    <Ionicons name="navigate-outline" size={20} color={colors.primary} />
+                    <Text style={[styles.navButtonText, { color: colors.primary }]}>Yol Tarifi</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={styles.reserveButton}
+                    style={[styles.reserveButton, { backgroundColor: colors.primary }]}
                     onPress={() => navigation.navigate('Reservation', { lot })}
                 >
                     <Ionicons name="calendar-outline" size={20} color="white" />

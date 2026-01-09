@@ -59,7 +59,7 @@ export default function LanguageScreen({ navigation }) {
             </View>
 
             <View style={styles.content}>
-                <Text style={styles.sectionTitle}>DİL SEÇİNİ</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>DİL SEÇİNİ</Text>
                 <View style={[styles.optionsContainer, { backgroundColor: colors.card }]}>
                     {languageOptions.map((option, index) => (
                         <TouchableOpacity

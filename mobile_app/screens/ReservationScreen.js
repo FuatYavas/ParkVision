@@ -9,11 +9,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 import { getParkingSpots, createReservation } from '../api';
 import { generateMockSpots } from '../data/mockData';
 
 export default function ReservationScreen({ route, navigation }) {
+    const { colors, isDark } = useTheme();
     const { lot } = route.params || {}; // Get lot from params
     const [spots, setSpots] = useState([]);
     const [selectedSpot, setSelectedSpot] = useState(null);
@@ -135,49 +137,49 @@ export default function ReservationScreen({ route, navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color="#000" />
+                    <Ionicons name="chevron-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Rezervasyon: {lot?.name || 'Otopark'}</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Park Yeri Seçimi</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
                 {/* Timer */}
-                <View style={styles.timerContainer}>
-                    <View style={styles.timeBox}>
-                        <Text style={styles.timeValue}>{time.h}</Text>
-                        <Text style={styles.timeLabel}>Saat</Text>
+                <View style={[styles.timerContainer, { backgroundColor: colors.card }]}>
+                    <View style={[styles.timeBox, { backgroundColor: isDark ? '#1C1C1E' : '#F0F7FA' }]}>
+                        <Text style={[styles.timeValue, { color: colors.text }]}>{time.h}</Text>
+                        <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>Saat</Text>
                     </View>
-                    <View style={styles.timeBox}>
-                        <Text style={styles.timeValue}>{time.m}</Text>
-                        <Text style={styles.timeLabel}>Dakika</Text>
+                    <View style={[styles.timeBox, { backgroundColor: isDark ? '#1C1C1E' : '#F0F7FA' }]}>
+                        <Text style={[styles.timeValue, { color: colors.text }]}>{time.m}</Text>
+                        <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>Dakika</Text>
                     </View>
-                    <View style={styles.timeBox}>
-                        <Text style={styles.timeValue}>{time.s}</Text>
-                        <Text style={styles.timeLabel}>Saniye</Text>
+                    <View style={[styles.timeBox, { backgroundColor: isDark ? '#1C1C1E' : '#F0F7FA' }]}>
+                        <Text style={[styles.timeValue, { color: colors.text }]}>{time.s}</Text>
+                        <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>Saniye</Text>
                     </View>
                 </View>
 
-                <Text style={styles.instructionText}>
+                <Text style={[styles.instructionText, { color: colors.textSecondary }]}>
                     Park yeri seçmek için 30 dakikanız var.
                 </Text>
 
                 {/* Legend */}
-                <View style={styles.legendContainer}>
+                <View style={[styles.legendContainer, { backgroundColor: colors.card }]}>
                     <View style={styles.legendItem}>
                         <View style={[styles.legendDot, { backgroundColor: '#4CAF50' }]} />
-                        <Text style={styles.legendText}>Boş</Text>
+                        <Text style={[styles.legendText, { color: colors.text }]}>Boş</Text>
                     </View>
                     <View style={styles.legendItem}>
-                        <View style={[styles.legendDot, { backgroundColor: '#0066FF' }]} />
-                        <Text style={styles.legendText}>Seçili</Text>
+                        <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+                        <Text style={[styles.legendText, { color: colors.text }]}>Seçili</Text>
                     </View>
                     <View style={styles.legendItem}>
                         <View style={[styles.legendDot, { backgroundColor: '#F87171' }]} />
-                        <Text style={styles.legendText}>Dolu</Text>
+                        <Text style={[styles.legendText, { color: colors.text }]}>Dolu</Text>
                     </View>
                 </View>
 
@@ -195,46 +197,46 @@ export default function ReservationScreen({ route, navigation }) {
                             </TouchableOpacity>
                         ))
                     ) : (
-                        <Text style={{ textAlign: 'center', width: '100%', color: '#666' }}>
+                        <Text style={{ textAlign: 'center', width: '100%', color: colors.textSecondary }}>
                             {lot?.id ? 'Park yerleri yükleniyor...' : 'Lütfen önce bir otopark seçin.'}
                         </Text>
                     )}
                 </View>
 
                 {/* QR Code */}
-                <View style={styles.qrContainer}>
-                    <View style={styles.qrCircle}>
-                        <Ionicons name="qr-code-outline" size={40} color="#0066FF" />
+                <View style={[styles.qrContainer, { backgroundColor: colors.card }]}>
+                    <View style={[styles.qrCircle, { backgroundColor: isDark ? '#1C3A57' : '#E3F2FD' }]}>
+                        <Ionicons name="qr-code-outline" size={40} color={colors.primary} />
                     </View>
-                    <Text style={styles.qrTitle}>QR Kod</Text>
-                    <Text style={styles.qrSubtitle}>
+                    <Text style={[styles.qrTitle, { color: colors.text }]}>QR Kod</Text>
+                    <Text style={[styles.qrSubtitle, { color: colors.textSecondary }]}>
                         QR kodunuzu oluşturmak için bir park yeri seçin
                     </Text>
                 </View>
             </ScrollView>
 
-            <View style={styles.footer}>
+            <View style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
                 {selectedSpot ? (
                     <>
                         <TouchableOpacity
-                            style={styles.confirmButton}
+                            style={[styles.confirmButton, { backgroundColor: colors.primary }]}
                             onPress={handleReservation}
                         >
                             <Text style={styles.confirmButtonText}>Rezervasyonu Onayla</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={styles.cancelButton}
+                            style={[styles.cancelButton, { backgroundColor: isDark ? '#2C2C2E' : '#F5F7FA' }]}
                             onPress={() => navigation.goBack()}
                         >
-                            <Text style={styles.cancelButtonText}>İptal Et</Text>
+                            <Text style={[styles.cancelButtonText, { color: colors.text }]}>İptal Et</Text>
                         </TouchableOpacity>
                     </>
                 ) : (
                     <TouchableOpacity
-                        style={styles.cancelButton}
+                        style={[styles.cancelButton, { backgroundColor: isDark ? '#2C2C2E' : '#F5F7FA' }]}
                         onPress={() => navigation.goBack()}
                     >
-                        <Text style={styles.cancelButtonText}>Rezervasyonu İptal Et</Text>
+                        <Text style={[styles.cancelButtonText, { color: colors.text }]}>Rezervasyonu İptal Et</Text>
                     </TouchableOpacity>
                 )}
             </View>

@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 import { getCurrentUser, updateProfile, changePassword } from '../api';
 
 export default function PersonalInfoScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [showPasswordSection, setShowPasswordSection] = useState(false);
@@ -116,67 +118,67 @@ export default function PersonalInfoScreen({ navigation }) {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#0066FF" />
+                    <ActivityIndicator size="large" color={colors.primary} />
                 </View>
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Kişisel Bilgiler</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Kişisel Bilgiler</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <ScrollView style={styles.content}>
                 {/* Profile Information Section */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>PROFİL BİLGİLERİ</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>PROFİL BİLGİLERİ</Text>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Ad Soyad</Text>
+                        <Text style={[styles.label, { color: colors.text }]}>Ad Soyad</Text>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
                             value={fullName}
                             onChangeText={setFullName}
                             placeholder="Adınızı girin"
-                            placeholderTextColor="#999"
+                            placeholderTextColor={colors.textSecondary}
                         />
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>E-posta</Text>
+                        <Text style={[styles.label, { color: colors.text }]}>E-posta</Text>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
                             value={email}
                             onChangeText={setEmail}
                             placeholder="E-posta adresinizi girin"
-                            placeholderTextColor="#999"
+                            placeholderTextColor={colors.textSecondary}
                             keyboardType="email-address"
                             autoCapitalize="none"
                         />
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Telefon Numarası</Text>
+                        <Text style={[styles.label, { color: colors.text }]}>Telefon Numarası</Text>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
                             value={phone}
                             onChangeText={setPhone}
                             placeholder="Telefon numaranızı girin"
-                            placeholderTextColor="#999"
+                            placeholderTextColor={colors.textSecondary}
                             keyboardType="phone-pad"
                         />
                     </View>
 
                     <TouchableOpacity
-                        style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+                        style={[styles.saveButton, { backgroundColor: colors.primary }, saving && styles.disabledButton]}
                         onPress={handleSaveProfile}
                         disabled={saving}
                     >
@@ -191,11 +193,11 @@ export default function PersonalInfoScreen({ navigation }) {
                 {/* Password Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>ŞİFRE</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>ŞİFRE</Text>
                         <TouchableOpacity
                             onPress={() => setShowPasswordSection(!showPasswordSection)}
                         >
-                            <Text style={styles.changePasswordButton}>
+                            <Text style={[styles.changePasswordButton, { color: colors.primary }]}>
                                 {showPasswordSection ? 'İptal' : 'Şifre Değiştir'}
                             </Text>
                         </TouchableOpacity>
@@ -204,43 +206,43 @@ export default function PersonalInfoScreen({ navigation }) {
                     {showPasswordSection && (
                         <>
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Mevcut Şifre</Text>
+                                <Text style={[styles.label, { color: colors.text }]}>Mevcut Şifre</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
                                     value={currentPassword}
                                     onChangeText={setCurrentPassword}
                                     placeholder="Mevcut şifrenizi girin"
-                                    placeholderTextColor="#999"
+                                    placeholderTextColor={colors.textSecondary}
                                     secureTextEntry
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Yeni Şifre</Text>
+                                <Text style={[styles.label, { color: colors.text }]}>Yeni Şifre</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
                                     value={newPassword}
                                     onChangeText={setNewPassword}
                                     placeholder="Yeni şifrenizi girin"
-                                    placeholderTextColor="#999"
+                                    placeholderTextColor={colors.textSecondary}
                                     secureTextEntry
                                 />
                             </View>
 
                             <View style={styles.inputGroup}>
-                                <Text style={styles.label}>Yeni Şifre Tekrar</Text>
+                                <Text style={[styles.label, { color: colors.text }]}>Yeni Şifre Tekrar</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
                                     value={confirmPassword}
                                     onChangeText={setConfirmPassword}
                                     placeholder="Yeni şifrenizi tekrar girin"
-                                    placeholderTextColor="#999"
+                                    placeholderTextColor={colors.textSecondary}
                                     secureTextEntry
                                 />
                             </View>
 
                             <TouchableOpacity
-                                style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+                                style={[styles.changePasswordButton, { backgroundColor: colors.primary }, saving && styles.disabledButton]}
                                 onPress={handleChangePassword}
                                 disabled={saving}
                             >

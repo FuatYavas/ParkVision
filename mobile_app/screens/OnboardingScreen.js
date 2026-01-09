@@ -9,10 +9,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 export default function OnboardingScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const features = [
         {
             icon: 'time-outline',
@@ -36,23 +38,23 @@ export default function OnboardingScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={styles.content}>
                 {/* Header Section */}
                 <View style={styles.headerSection}>
                     <View style={styles.iconGrid}>
                         <View style={styles.gridRow}>
-                            <Ionicons name="map-outline" size={40} color="#003366" style={styles.gridIcon} />
-                            <Ionicons name="calendar-outline" size={40} color="#003366" style={styles.gridIcon} />
+                            <Ionicons name="map-outline" size={40} color={colors.primary} style={styles.gridIcon} />
+                            <Ionicons name="calendar-outline" size={40} color={colors.primary} style={styles.gridIcon} />
                         </View>
                         <View style={styles.gridRow}>
-                            <Ionicons name="navigate-outline" size={40} color="#003366" style={styles.gridIcon} />
-                            <Ionicons name="car-outline" size={40} color="#003366" style={styles.gridIcon} />
+                            <Ionicons name="navigate-outline" size={40} color={colors.primary} style={styles.gridIcon} />
+                            <Ionicons name="car-outline" size={40} color={colors.primary} style={styles.gridIcon} />
                         </View>
                     </View>
 
-                    <Text style={styles.title}>Akıllı Park Asistanınız</Text>
-                    <Text style={styles.subtitle}>
+                    <Text style={[styles.title, { color: colors.text }]}>Akıllı Park Asistanınız</Text>
+                    <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
                         Mükemmel park yerinizi kolayca bulun, rezerve edin ve navigasyonla ulaşın.
                     </Text>
                 </View>
@@ -73,19 +75,19 @@ export default function OnboardingScreen({ navigation }) {
                 <View style={styles.checklist}>
                     {features.map((feature, index) => (
                         <View key={index} style={styles.checklistItem}>
-                            <Ionicons name="checkmark-circle-outline" size={24} color="#00D09C" />
-                            <Text style={styles.checklistText}>{feature.title}</Text>
+                            <Ionicons name="checkmark-circle-outline" size={24} color={colors.primary} />
+                            <Text style={[styles.checklistText, { color: colors.text }]}>{feature.title}</Text>
                         </View>
                     ))}
                 </View>
 
                 {/* Footer Buttons */}
                 <View style={styles.footer}>
-                    <TouchableOpacity style={styles.skipButton} onPress={handleGetStarted}>
-                        <Text style={styles.skipButtonText}>Atla</Text>
+                    <TouchableOpacity style={[styles.skipButton, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]} onPress={handleGetStarted}>
+                        <Text style={[styles.skipButtonText, { color: colors.text }]}>Atla</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted}>
+                    <TouchableOpacity style={[styles.getStartedButton, { backgroundColor: colors.primary }]} onPress={handleGetStarted}>
                         <Text style={styles.getStartedButtonText}>Başla</Text>
                     </TouchableOpacity>
                 </View>

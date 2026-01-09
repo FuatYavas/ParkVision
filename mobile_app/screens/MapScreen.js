@@ -696,17 +696,6 @@ export default function MapScreen({ navigation }) {
                 ))}
             </MapView>
 
-            {/* Live Update Indicator */}
-            <View style={styles.liveUpdateContainer}>
-                <View style={[styles.liveIndicator, { backgroundColor: '#22C55E' }]} />
-                <Text style={styles.liveUpdateText}>
-                    Canlı Güncelleme • {getTimeSinceUpdate()} saniye önce
-                </Text>
-                <TouchableOpacity onPress={refresh} style={styles.refreshButton}>
-                    <Ionicons name="refresh" size={16} color="#666" />
-                </TouchableOpacity>
-            </View>
-
             {/* Location Button */}
             <TouchableOpacity
                 style={[

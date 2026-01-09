@@ -12,10 +12,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import { useTheme } from '../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
+const darkMapStyle = [
+    { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+];
+
 export default function NavigationScreen({ route, navigation }) {
+    const { colors, isDark } = useTheme();
     const { lot } = route.params || {};
     const [userLocation, setUserLocation] = useState(null);
     const [routeInfo, setRouteInfo] = useState({
@@ -176,37 +186,37 @@ export default function NavigationScreen({ route, navigation }) {
 
             <SafeAreaView style={styles.overlay}>
                 {/* Header */}
-                <View style={styles.header}>
+                <View style={[styles.header, { backgroundColor: colors.card }]}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#000" />
+                        <Ionicons name="arrow-back" size={24} color={colors.text} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle} numberOfLines={1}>
+                    <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
                         {destination.name}
                     </Text>
                     <View style={{ width: 24 }} />
                 </View>
 
                 {/* Route Info Card */}
-                <View style={styles.infoCard}>
+                <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
                     <View style={styles.routeInfoContainer}>
                         <View style={styles.infoItem}>
-                            <Ionicons name="time-outline" size={24} color="#0066FF" />
-                            <Text style={styles.timeText}>
+                            <Ionicons name="time-outline" size={24} color={colors.primary} />
+                            <Text style={[styles.timeText, { color: colors.text }]}>
                                 {routeInfo.duration > 0 
                                     ? formatDuration(routeInfo.duration) 
                                     : 'Hesaplanıyor...'}
                             </Text>
-                            <Text style={styles.infoLabel}>Tahmini Süre</Text>
+                            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Tahmini Süre</Text>
                         </View>
-                        <View style={styles.divider} />
+                        <View style={[styles.divider, { backgroundColor: colors.border }]} />
                         <View style={styles.infoItem}>
                             <Ionicons name="navigate-outline" size={24} color="#4CAF50" />
-                            <Text style={styles.distanceText}>
+                            <Text style={[styles.distanceText, { color: colors.text }]}>
                                 {routeInfo.distance > 0 
                                     ? formatDistance(routeInfo.distance) 
                                     : 'Hesaplanıyor...'}
                             </Text>
-                            <Text style={styles.infoLabel}>Mesafe</Text>
+                            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Mesafe</Text>
                         </View>
                     </View>
                 </View>
@@ -214,16 +224,19 @@ export default function NavigationScreen({ route, navigation }) {
                 {/* Bottom Buttons */}
                 <View style={styles.bottomContainer}>
                     <TouchableOpacity 
-                        style={styles.primaryButton} 
+                        style={[styles.primaryButton, { backgroundColor: colors.primary }]} 
                         onPress={openExternalNavigation}
                     >
                         <Ionicons name="navigate" size={20} color="white" />
                         <Text style={styles.primaryButtonText}>Google Maps ile Aç</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.secondaryButton} onPress={handleSaveLocation}>
-                        <Ionicons name="bookmark-outline" size={20} color="#0066FF" />
-                        <Text style={styles.secondaryButtonText}>Park Konumunu Kaydet</Text>
+                    <TouchableOpacity 
+                        style={[styles.secondaryButton, { backgroundColor: isDark ? '#1C1C1E' : '#F5F7FA' }]} 
+                        onPress={handleSaveLocation}
+                    >
+                        <Ionicons name="bookmark-outline" size={20} color={colors.primary} />
+                        <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>Park Konumunu Kaydet</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>

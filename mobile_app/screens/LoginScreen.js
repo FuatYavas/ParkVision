@@ -20,6 +20,18 @@ export default function LoginScreen({ navigation }) {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
+    const handleForgotPassword = () => {
+        if (!email) {
+            Alert.alert('Email Gerekli', 'Lütfen email adresinizi girin.');
+            return;
+        }
+        Alert.alert(
+            'Şifre Sıfırlama',
+            `${email} adresine şifre sıfırlama linki gönderildi.\n\nNot: Bu özellik demo modunda çalışmaktadır.`,
+            [{ text: 'Tamam' }]
+        );
+    };
+
     const handleLogin = async () => {
         if (!email || !password) {
             Alert.alert('Hata', 'Lütfen tüm alanları doldurun');
@@ -90,23 +102,12 @@ export default function LoginScreen({ navigation }) {
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity style={styles.forgotPassword}>
+                    <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword}>
                         <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>Şifremi Unuttum?</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={[styles.loginButton, { backgroundColor: colors.primary }]} onPress={handleLogin}>
                         <Text style={styles.loginButtonText}>Giriş Yap</Text>
-                    </TouchableOpacity>
-
-                    <View style={styles.dividerContainer}>
-                        <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-                        <Text style={[styles.dividerText, { color: colors.textSecondary }]}>veya</Text>
-                        <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-                    </View>
-
-                    <TouchableOpacity style={[styles.googleButton, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <Ionicons name="logo-google" size={24} color="#DB4437" style={styles.googleIcon} />
-                        <Text style={[styles.googleButtonText, { color: colors.text }]}>Google ile giriş</Text>
                     </TouchableOpacity>
                 </View>
 

@@ -11,12 +11,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../context/ThemeContext';
 
 import { mockParkingLots } from '../data/mockData';
 
 const FAVORITES_KEY = 'favorite_parking_lots';
 
 export default function FavoritesScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -93,7 +95,7 @@ export default function FavoritesScreen({ navigation }) {
 
         return (
             <TouchableOpacity 
-                style={styles.card}
+                style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.text }]}
                 onPress={() => navigation.navigate('ParkingDetail', { lot: {
                     id: item.id,
                     name: item.name,
@@ -113,7 +115,7 @@ export default function FavoritesScreen({ navigation }) {
                 />
                 <View style={styles.cardContent}>
                     <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+                        <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
                         <TouchableOpacity 
                             style={styles.favoriteButton}
                             onPress={() => removeFavorite(item.id)}
@@ -122,33 +124,33 @@ export default function FavoritesScreen({ navigation }) {
                         </TouchableOpacity>
                     </View>
                     
-                    <Text style={styles.cardAddress} numberOfLines={1}>{item.address}</Text>
+                    <Text style={[styles.cardAddress, { color: colors.textSecondary }]} numberOfLines={1}>{item.address}</Text>
                     
                     <View style={styles.cardStats}>
                         <View style={styles.statItem}>
                             <View style={[styles.statusDot, { backgroundColor: getOccupancyColor(item) }]} />
-                            <Text style={styles.statText}>{getOccupancyText(item)}</Text>
+                            <Text style={[styles.statText, { color: colors.textSecondary }]}>{getOccupancyText(item)}</Text>
                         </View>
                         <View style={styles.statItem}>
-                            <Ionicons name="car-outline" size={16} color="#666" />
-                            <Text style={styles.statText}>{emptySpots} boş</Text>
+                            <Ionicons name="car-outline" size={16} color={colors.textSecondary} />
+                            <Text style={[styles.statText, { color: colors.textSecondary }]}>{emptySpots} boş</Text>
                         </View>
                         <View style={styles.statItem}>
-                            <Ionicons name="cash-outline" size={16} color="#666" />
-                            <Text style={styles.statText}>{item.hourly_rate}₺/sa</Text>
+                            <Ionicons name="cash-outline" size={16} color={colors.textSecondary} />
+                            <Text style={[styles.statText, { color: colors.textSecondary }]}>{item.hourly_rate}₺/sa</Text>
                         </View>
                     </View>
 
                     <View style={styles.cardActions}>
                         <TouchableOpacity 
-                            style={styles.actionButton}
+                            style={[styles.actionButton, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
                             onPress={() => navigation.navigate('Navigation', { lot: item })}
                         >
-                            <Ionicons name="navigate-outline" size={18} color="#0066FF" />
-                            <Text style={styles.actionButtonText}>Yol Tarifi</Text>
+                            <Ionicons name="navigate-outline" size={18} color={colors.primary} />
+                            <Text style={[styles.actionButtonText, { color: colors.primary }]}>Yol Tarifi</Text>
                         </TouchableOpacity>
                         <TouchableOpacity 
-                            style={[styles.actionButton, styles.reserveButton]}
+                            style={[styles.actionButton, styles.reserveButton, { backgroundColor: colors.primary }]}
                             onPress={() => navigation.navigate('Reservation', { lot: {
                                 id: item.id,
                                 name: item.name,
@@ -167,14 +169,14 @@ export default function FavoritesScreen({ navigation }) {
     const renderEmptyState = () => (
         <View style={styles.emptyContainer}>
             <View style={styles.emptyIconContainer}>
-                <Ionicons name="heart-outline" size={64} color="#CCC" />
+                <Ionicons name="heart-outline" size={64} color={colors.border} />
             </View>
-            <Text style={styles.emptyTitle}>Henüz favori otopark yok</Text>
-            <Text style={styles.emptySubtitle}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>Henüz favori otopark yok</Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
                 Harita üzerinden otoparkları görüntüleyip favorilerinize ekleyebilirsiniz.
             </Text>
             <TouchableOpacity 
-                style={styles.exploreButton}
+                style={[styles.exploreButton, { backgroundColor: colors.primary }]}
                 onPress={() => navigation.navigate('Main', { screen: 'Map' })}
             >
                 <Ionicons name="map-outline" size={20} color="white" />
@@ -184,12 +186,12 @@ export default function FavoritesScreen({ navigation }) {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color="#000" />
+                    <Ionicons name="chevron-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Favori Otoparklar</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Favori Otoparklar</Text>
                 <View style={{ width: 24 }} />
             </View>
 

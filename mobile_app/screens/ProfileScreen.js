@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 
 import { useTheme } from '../context/ThemeContext';
+import { getCurrentUser } from '../api';
 
 export default function ProfileScreen({ navigation }) {
     const { colors, isDark } = useTheme();
