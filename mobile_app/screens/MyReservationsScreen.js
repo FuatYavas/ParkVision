@@ -19,16 +19,16 @@ export default function MyReservationsScreen({ navigation }) {
 
     useEffect(() => {
         fetchReservations();
-        
+
         const timer = setInterval(() => {
             setCurrentTime(new Date());
         }, 1000);
-        
+
         // Refresh reservations when screen comes into focus
         const unsubscribe = navigation.addListener('focus', () => {
             fetchReservations();
         });
-        
+
         return () => {
             clearInterval(timer);
             unsubscribe();
@@ -38,10 +38,35 @@ export default function MyReservationsScreen({ navigation }) {
     const fetchReservations = async () => {
         try {
             setLoading(true);
-            const data = await getMyReservations();
-            
-            // Transform backend data to match our format
-            const formattedReservations = data.map(res => ({
+
+            // Önce lokal rezervasyonları oku
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            const localReservationsStr = await AsyncStorage.getItem('user_reservations');
+            const localReservations = localReservationsStr ? JSON.parse(localReservationsStr) : [];
+
+            // API'den de dene (hata verirse sadece lokal kullan)
+            let apiReservations = [];
+            try {
+                const data = await getMyReservations();
+                apiReservations = data.map(res => ({
+                    id: res.id,
+                    parkingLotName: res.parking_lot_name || 'Otopark',
+                    spotNumber: res.spot_number || `#${res.spot_id}`,
+                    startTime: new Date(res.start_time),
+                    endTime: new Date(res.end_time),
+                    price: res.price || 15,
+                    status: res.status,
+                    reservationCode: res.reservation_code,
+                    spotId: res.spot_id,
+                    latitude: res.latitude || 38.6791,
+                    longitude: res.longitude || 39.2264
+                }));
+            } catch (apiError) {
+                console.log('API unavailable, using local reservations');
+            }
+
+            // Lokal rezervasyonları formatla
+            const formattedLocalReservations = localReservations.map(res => ({
                 id: res.id,
                 parkingLotName: res.parking_lot_name || 'Otopark',
                 spotNumber: res.spot_number || `#${res.spot_id}`,
@@ -54,24 +79,13 @@ export default function MyReservationsScreen({ navigation }) {
                 latitude: res.latitude || 38.6791,
                 longitude: res.longitude || 39.2264
             }));
-            
-            setReservations(formattedReservations);
+
+            // Tüm rezervasyonları birleştir
+            const allReservations = [...apiReservations, ...formattedLocalReservations];
+            setReservations(allReservations);
         } catch (error) {
             console.error('Error fetching reservations:', error);
-            // Show mock data on error for demo purposes
-            setReservations([
-                {
-                    id: 'mock-1',
-                    parkingLotName: 'Elazığ AVM Otoparkı',
-                    spotNumber: 'A5',
-                    startTime: new Date(),
-                    endTime: new Date(Date.now() + 30 * 60 * 1000),
-                    price: 15,
-                    status: 'active',
-                    latitude: 38.6791,
-                    longitude: 39.2264
-                }
-            ]);
+            setReservations([]);
         } finally {
             setLoading(false);
         }

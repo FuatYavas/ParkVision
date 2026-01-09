@@ -172,8 +172,57 @@ export const mockReservations = [
     }
 ];
 
+// Kullanıcı konumuna göre dinamik otoparklar oluştur
+const parkingNames = [
+    "Merkez Otopark", "City Park", "Metro Otopark", "Plaza Otopark",
+    "Belediye Otoparkı", "Hastane Otoparkı", "Çarşı Otopark", "Stadyum Otopark",
+    "Terminal Otopark", "AVM Otoparkı", "İş Merkezi Otoparkı", "Kültür Merkezi Otopark"
+];
+
+const featuresOptions = [
+    ['camera', 'security'],
+    ['camera', 'security', 'covered'],
+    ['camera', 'covered', 'ev_charging'],
+    ['camera', 'security', 'wifi'],
+    ['camera', 'outdoor'],
+    ['camera', 'security', 'valet', 'covered']
+];
+
+export const generateDynamicParkingLots = (userLat, userLon, count = 8) => {
+    const lots = [];
+
+    for (let i = 0; i < count; i++) {
+        // Kullanıcı etrafında rastgele konum (0.5-5 km yarıçapında)
+        const distance = 0.005 + Math.random() * 0.045; // ~0.5km - 5km
+        const angle = Math.random() * 2 * Math.PI;
+        const lat = userLat + distance * Math.cos(angle);
+        const lon = userLon + distance * Math.sin(angle);
+
+        const capacity = 50 + Math.floor(Math.random() * 200);
+        const occupancyRate = 0.3 + Math.random() * 0.6; // %30-90 doluluk
+
+        lots.push({
+            id: 100 + i,
+            name: parkingNames[i % parkingNames.length],
+            latitude: lat,
+            longitude: lon,
+            capacity: capacity,
+            current_occupancy: Math.floor(capacity * occupancyRate),
+            hourly_rate: 5 + Math.floor(Math.random() * 20),
+            is_active: true,
+            address: `Kullanıcı Yakını #${i + 1}`,
+            features: featuresOptions[Math.floor(Math.random() * featuresOptions.length)],
+            rating: (3.5 + Math.random() * 1.5).toFixed(1),
+            distance: null // Dinamik hesaplanacak
+        });
+    }
+
+    return lots;
+};
+
 export default {
     mockParkingLots,
     generateMockSpots,
-    mockReservations
+    mockReservations,
+    generateDynamicParkingLots
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
@@ -10,7 +10,9 @@ import {
     Image,
     Platform,
     Alert,
-    Modal
+    Modal,
+    PanResponder,
+    Animated
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker } from 'react-native-maps';
@@ -22,7 +24,7 @@ const { width } = Dimensions.get('window');
 const FAVORITES_KEY = 'favorite_parking_lots';
 
 import { getParkingLots } from '../api';
-import { mockParkingLots } from '../data/mockData';
+import { mockParkingLots, generateDynamicParkingLots } from '../data/mockData';
 
 // Helper function to get marker color based on occupancy
 const getMarkerColor = (occupancy) => {
@@ -49,6 +51,44 @@ export default function MapScreen({ navigation }) {
     const [favorites, setFavorites] = useState([]);
     const mapRef = React.useRef(null);
 
+    // Swipe-to-dismiss için Animated value
+    const panY = useRef(new Animated.Value(0)).current;
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: (_, gestureState) => {
+                // Sadece aşağı kaydırma için aktif
+                return gestureState.dy > 5;
+            },
+            onPanResponderMove: (_, gestureState) => {
+                // Sadece aşağı kaydırmaya izin ver
+                if (gestureState.dy > 0) {
+                    panY.setValue(gestureState.dy);
+                }
+            },
+            onPanResponderRelease: (_, gestureState) => {
+                // 100px'den fazla kaydırıldıysa kapat
+                if (gestureState.dy > 100) {
+                    Animated.timing(panY, {
+                        toValue: 400,
+                        duration: 200,
+                        useNativeDriver: true
+                    }).start(() => {
+                        setSelectedLot(null);
+                        panY.setValue(0);
+                    });
+                } else {
+                    // Geri yay
+                    Animated.spring(panY, {
+                        toValue: 0,
+                        useNativeDriver: true
+                    }).start();
+                }
+            }
+        })
+    ).current;
+
     useEffect(() => {
         (async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
@@ -60,6 +100,8 @@ export default function MapScreen({ navigation }) {
                     [{ text: 'Tamam' }]
                 );
                 setHasLocationPermission(false);
+                // Konum yokken de mock data yükle
+                loadMockData();
                 return;
             }
 
@@ -70,16 +112,16 @@ export default function MapScreen({ navigation }) {
                     accuracy: Location.Accuracy.High
                 });
                 setLocation(currentLocation);
+                // Konum alındığında gerçek mesafelerle yükle
+                loadMockData(currentLocation.coords.latitude, currentLocation.coords.longitude);
             } catch (error) {
                 console.error('Error getting location:', error);
+                // Konum alınamazsa varsayılan değerlerle yükle
+                loadMockData();
             }
         })();
 
-        // Load mock data immediately for better UX
-        loadMockData();
         loadFavorites();
-        // Disable API fetch - using only mock data for Elazığ
-        // fetchParkingLots();
     }, []);
 
     const loadFavorites = async () => {
@@ -108,19 +150,71 @@ export default function MapScreen({ navigation }) {
         }
     };
 
-    const loadMockData = () => {
-        const formattedLots = mockParkingLots.map(lot => ({
-            id: lot.id,
-            name: lot.name,
-            latitude: lot.latitude,
-            longitude: lot.longitude,
-            occupancy: Math.round((lot.current_occupancy / lot.capacity) * 100) || 0,
-            price: lot.hourly_rate || 0,
-            distance: lot.distance,
-            rating: lot.rating,
-            isOpen: lot.is_active,
-            features: lot.features || []
-        }));
+    // Calculate distance between two coordinates in km
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+        const R = 6371; // Earth's radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+
+    const loadMockData = (userLat = null, userLon = null) => {
+        // Temel otoparkları formatla
+        let allLots = [...mockParkingLots];
+
+        // Kullanıcı konumu varsa, etrafına dinamik otoparklar ekle
+        if (userLat && userLon) {
+            const dynamicLots = generateDynamicParkingLots(userLat, userLon, 6);
+            allLots = [...allLots, ...dynamicLots];
+        }
+
+        const formattedLots = allLots.map(lot => {
+            let distance = lot.distance;
+            let distanceValue = 0;
+
+            // Kullanıcı konumu varsa gerçek mesafeyi hesapla
+            if (userLat && userLon) {
+                const dist = calculateDistance(userLat, userLon, lot.latitude, lot.longitude);
+                distance = dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`;
+                distanceValue = dist;
+            } else {
+                // Fallback: string'den parse et
+                if (typeof lot.distance === 'string') {
+                    const match = lot.distance.match(/([\d.]+)\s*(m|km)?/i);
+                    if (match) {
+                        distanceValue = parseFloat(match[1]);
+                        if (match[2] && match[2].toLowerCase() === 'm') {
+                            distanceValue = distanceValue / 1000;
+                        }
+                    }
+                }
+            }
+
+            return {
+                id: lot.id,
+                name: lot.name,
+                latitude: lot.latitude,
+                longitude: lot.longitude,
+                occupancy: Math.round((lot.current_occupancy / lot.capacity) * 100) || 0,
+                price: lot.hourly_rate || 0,
+                distance: distance,
+                distanceValue: distanceValue,
+                rating: parseFloat(lot.rating) || 4.0,
+                isOpen: lot.is_active,
+                is_active: lot.is_active,
+                capacity: lot.capacity,
+                features: lot.features || []
+            };
+        });
+
+        // Mesafeye göre sırala
+        formattedLots.sort((a, b) => a.distanceValue - b.distanceValue);
+
         setAllParkingLots(formattedLots);
         setParkingLots(formattedLots);
     };
@@ -141,10 +235,27 @@ export default function MapScreen({ navigation }) {
             filtered = filtered.filter(lot => lot.price <= filters.maxPrice);
         }
 
-        // Apply distance filter
+        // Apply distance filter - use distanceValue for accurate filtering
         if (filters.maxDistance) {
             filtered = filtered.filter(lot => {
-                const dist = parseFloat(lot.distance);
+                // distanceValue zaten sayısal olarak hesaplanmış
+                if (lot.distanceValue !== undefined && !isNaN(lot.distanceValue)) {
+                    return lot.distanceValue <= filters.maxDistance;
+                }
+                // Fallback: string'den parse et
+                let dist;
+                if (typeof lot.distance === 'string') {
+                    // "500 m" veya "2.1 km" formatını parse et
+                    const match = lot.distance.match(/([\d.]+)\s*(m|km)?/i);
+                    if (match) {
+                        dist = parseFloat(match[1]);
+                        if (match[2] && match[2].toLowerCase() === 'm') {
+                            dist = dist / 1000; // metreyi km'ye çevir
+                        }
+                    }
+                } else {
+                    dist = parseFloat(lot.distance);
+                }
                 return !isNaN(dist) && dist <= filters.maxDistance;
             });
         }
@@ -221,9 +332,9 @@ export default function MapScreen({ navigation }) {
             animationType="slide"
             onRequestClose={() => setActiveModal(null)}
         >
-            <TouchableOpacity 
-                style={styles.modalOverlay} 
-                activeOpacity={1} 
+            <TouchableOpacity
+                style={styles.modalOverlay}
+                activeOpacity={1}
                 onPress={() => setActiveModal(null)}
             >
                 <View style={styles.modalContent}>
@@ -233,7 +344,7 @@ export default function MapScreen({ navigation }) {
                             <Ionicons name="close" size={24} color="#666" />
                         </TouchableOpacity>
                     </View>
-                    
+
                     <View style={styles.modalBody}>
                         {[
                             { label: 'Tümü', value: null },
@@ -257,7 +368,7 @@ export default function MapScreen({ navigation }) {
                             </TouchableOpacity>
                         ))}
                     </View>
-                    
+
                     <TouchableOpacity
                         style={styles.clearButton}
                         onPress={() => {
@@ -279,9 +390,9 @@ export default function MapScreen({ navigation }) {
             animationType="slide"
             onRequestClose={() => setActiveModal(null)}
         >
-            <TouchableOpacity 
-                style={styles.modalOverlay} 
-                activeOpacity={1} 
+            <TouchableOpacity
+                style={styles.modalOverlay}
+                activeOpacity={1}
                 onPress={() => setActiveModal(null)}
             >
                 <View style={styles.modalContent}>
@@ -291,7 +402,7 @@ export default function MapScreen({ navigation }) {
                             <Ionicons name="close" size={24} color="#666" />
                         </TouchableOpacity>
                     </View>
-                    
+
                     <View style={styles.modalBody}>
                         {[
                             { label: 'Tümü', value: null },
@@ -315,7 +426,7 @@ export default function MapScreen({ navigation }) {
                             </TouchableOpacity>
                         ))}
                     </View>
-                    
+
                     <TouchableOpacity
                         style={styles.clearButton}
                         onPress={() => {
@@ -337,9 +448,9 @@ export default function MapScreen({ navigation }) {
             animationType="slide"
             onRequestClose={() => setActiveModal(null)}
         >
-            <TouchableOpacity 
-                style={styles.modalOverlay} 
-                activeOpacity={1} 
+            <TouchableOpacity
+                style={styles.modalOverlay}
+                activeOpacity={1}
                 onPress={() => setActiveModal(null)}
             >
                 <View style={styles.modalContent}>
@@ -349,7 +460,7 @@ export default function MapScreen({ navigation }) {
                             <Ionicons name="close" size={24} color="#666" />
                         </TouchableOpacity>
                     </View>
-                    
+
                     <View style={styles.modalBody}>
                         {[
                             { label: 'Güvenlik Kamerası', value: 'camera', icon: 'videocam-outline' },
@@ -374,7 +485,7 @@ export default function MapScreen({ navigation }) {
                             </TouchableOpacity>
                         ))}
                     </View>
-                    
+
                     <View style={styles.modalActions}>
                         <TouchableOpacity
                             style={styles.clearButton}
@@ -403,9 +514,9 @@ export default function MapScreen({ navigation }) {
             animationType="slide"
             onRequestClose={() => setActiveModal(null)}
         >
-            <TouchableOpacity 
-                style={styles.modalOverlay} 
-                activeOpacity={1} 
+            <TouchableOpacity
+                style={styles.modalOverlay}
+                activeOpacity={1}
                 onPress={() => setActiveModal(null)}
             >
                 <View style={styles.modalContent}>
@@ -415,7 +526,7 @@ export default function MapScreen({ navigation }) {
                             <Ionicons name="close" size={24} color="#666" />
                         </TouchableOpacity>
                     </View>
-                    
+
                     <View style={styles.modalBody}>
                         <Text style={styles.sectionTitle}>SIRALAMA</Text>
                         {[
@@ -440,7 +551,7 @@ export default function MapScreen({ navigation }) {
                             </TouchableOpacity>
                         ))}
                     </View>
-                    
+
                     <View style={styles.modalActions}>
                         <TouchableOpacity
                             style={styles.clearAllButton}
@@ -588,7 +699,7 @@ export default function MapScreen({ navigation }) {
                     style={styles.filtersContainer}
                     contentContainerStyle={styles.filtersContent}
                 >
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[
                             styles.filterChip,
                             (filters.maxPrice || filters.maxDistance || filters.features.length > 0) && styles.filterChipActive
@@ -603,7 +714,7 @@ export default function MapScreen({ navigation }) {
                             (filters.maxPrice || filters.maxDistance || filters.features.length > 0) && styles.filterTextActive
                         ]}>Filtrele</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.filterChip, filters.maxPrice && styles.filterChipActive]}
                         onPress={handlePriceFilter}
                     >
@@ -612,7 +723,7 @@ export default function MapScreen({ navigation }) {
                             {filters.maxPrice ? `${filters.maxPrice}₺ altı` : 'Fiyat'}
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.filterChip, filters.maxDistance && styles.filterChipActive]}
                         onPress={handleDistanceFilter}
                     >
@@ -621,7 +732,7 @@ export default function MapScreen({ navigation }) {
                             {filters.maxDistance ? `${filters.maxDistance} km` : 'Mesafe'}
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={[styles.filterChip, filters.features.length > 0 && styles.filterChipActive]}
                         onPress={handleFeaturesFilter}
                     >
@@ -631,7 +742,7 @@ export default function MapScreen({ navigation }) {
                         </Text>
                     </TouchableOpacity>
                 </ScrollView>
-                
+
                 {/* Results count */}
                 {searchQuery.trim() || filters.maxPrice || filters.maxDistance || filters.features.length > 0 ? (
                     <View style={styles.resultsBar}>
@@ -660,20 +771,37 @@ export default function MapScreen({ navigation }) {
 
             {/* Bottom Card */}
             {selectedLot && (
-                <View style={styles.bottomCardContainer}>
-                    <View style={styles.dragHandle} />
+                <Animated.View
+                    style={[
+                        styles.bottomCardContainer,
+                        { transform: [{ translateY: panY }] }
+                    ]}
+                    {...panResponder.panHandlers}
+                >
+                    <TouchableOpacity
+                        style={styles.dragHandle}
+                        onPress={() => setSelectedLot(null)}
+                    >
+                        <View style={styles.dragHandleBar} />
+                    </TouchableOpacity>
 
                     <View style={styles.cardHeader}>
                         <Text style={styles.cardTitle}>{selectedLot.name}</Text>
                         <View style={styles.cardHeaderRight}>
                             <TouchableOpacity
+                                style={styles.closeButton}
+                                onPress={() => setSelectedLot(null)}
+                            >
+                                <Ionicons name="close" size={22} color="#666" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
                                 style={styles.favoriteIconButton}
                                 onPress={() => toggleFavorite(selectedLot.id)}
                             >
-                                <Ionicons 
-                                    name={favorites.includes(selectedLot.id) ? "heart" : "heart-outline"} 
-                                    size={22} 
-                                    color={favorites.includes(selectedLot.id) ? "#EF4444" : "#666"} 
+                                <Ionicons
+                                    name={favorites.includes(selectedLot.id) ? "heart" : "heart-outline"}
+                                    size={22}
+                                    color={favorites.includes(selectedLot.id) ? "#EF4444" : "#666"}
                                 />
                             </TouchableOpacity>
                             <View style={styles.ratingContainer}>
@@ -738,7 +866,7 @@ export default function MapScreen({ navigation }) {
                             <Text style={styles.reserveButtonText}>Rezerve Et</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
+                </Animated.View>
             )}
         </View>
     );
@@ -979,12 +1107,19 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     dragHandle: {
+        alignSelf: 'center',
+        marginBottom: 16,
+        padding: 8,
+    },
+    dragHandleBar: {
         width: 40,
         height: 4,
         backgroundColor: '#E0E0E0',
         borderRadius: 2,
-        alignSelf: 'center',
-        marginBottom: 16,
+    },
+    closeButton: {
+        padding: 4,
+        marginRight: 8,
     },
     cardHeader: {
         flexDirection: 'row',

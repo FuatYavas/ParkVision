@@ -1,93 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    ScrollView,
-    TouchableOpacity
+    TouchableOpacity,
+    Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const LANGUAGE_KEY = 'app_language';
+
+const languageOptions = [
+    { label: 'Türkçe', value: 'tr', flag: '🇹🇷' },
+    { label: 'English', value: 'en', flag: '🇬🇧' },
+];
 
 export default function LanguageScreen({ navigation }) {
-    const [selectedLanguage, setSelectedLanguage] = useState('en');
+    const [language, setLanguage] = useState('tr');
 
-    const languages = [
-        {
-            code: 'en',
-            name: 'English',
-            nativeName: 'English',
-            flag: '🇬🇧'
-        },
-        {
-            code: 'tr',
-            name: 'Turkish',
-            nativeName: 'Türkçe',
-            flag: '🇹🇷'
+    useEffect(() => {
+        loadSettings();
+    }, []);
+
+    const loadSettings = async () => {
+        try {
+            const savedLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
+            if (savedLanguage) {
+                setLanguage(savedLanguage);
+            }
+        } catch (error) {
+            console.log('Failed to load language settings:', error);
         }
-    ];
+    };
 
-    const LanguageOption = ({ language }) => (
-        <TouchableOpacity
-            style={[
-                styles.languageCard,
-                selectedLanguage === language.code && styles.languageCardSelected
-            ]}
-            onPress={() => setSelectedLanguage(language.code)}
-        >
-            <View style={styles.languageLeft}>
-                <Text style={styles.flag}>{language.flag}</Text>
-                <View style={styles.languageInfo}>
-                    <Text style={[
-                        styles.languageName,
-                        selectedLanguage === language.code && styles.languageNameSelected
-                    ]}>
-                        {language.name}
-                    </Text>
-                    <Text style={styles.languageNative}>{language.nativeName}</Text>
-                </View>
-            </View>
-            {selectedLanguage === language.code && (
-                <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
-            )}
-        </TouchableOpacity>
-    );
+    const handleSelect = async (value) => {
+        try {
+            setLanguage(value);
+            await AsyncStorage.setItem(LANGUAGE_KEY, value);
+            // In a real app with i18n, you would change the locale here
+        } catch (error) {
+            console.log('Failed to save language settings:', error);
+            Alert.alert('Hata', 'Ayarlar kaydedilemedi.');
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Ionicons name="chevron-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Language</Text>
+                <Text style={styles.headerTitle}>Dil</Text>
                 <View style={{ width: 24 }} />
             </View>
 
-            <ScrollView style={styles.content}>
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>SELECT LANGUAGE</Text>
-                    {languages.map((language) => (
-                        <LanguageOption key={language.code} language={language} />
+            <View style={styles.content}>
+                <Text style={styles.sectionTitle}>DİL SEÇİNİ</Text>
+                <View style={styles.optionsContainer}>
+                    {languageOptions.map((option, index) => (
+                        <TouchableOpacity
+                            key={option.value}
+                            style={[
+                                styles.optionItem,
+                                index === languageOptions.length - 1 && styles.lastOptionItem
+                            ]}
+                            onPress={() => handleSelect(option.value)}
+                        >
+                            <View style={styles.optionLeft}>
+                                <Text style={styles.flag}>{option.flag}</Text>
+                                <Text style={styles.optionLabel}>{option.label}</Text>
+                            </View>
+                            {language === option.value && (
+                                <Ionicons name="checkmark-circle" size={24} color="#0066FF" />
+                            )}
+                        </TouchableOpacity>
                     ))}
                 </View>
 
-                <View style={styles.infoBox}>
-                    <Ionicons name="information-circle" size={20} color="#0066FF" />
+                {/* Info Note */}
+                <View style={styles.infoCard}>
+                    <Ionicons name="information-circle-outline" size={20} color="#666" />
                     <Text style={styles.infoText}>
-                        The app will restart to apply the new language. Your data will be preserved.
+                        Dil değişikliği uygulamanın bazı bölümlerinde hemen etkili olmayabilir. Tam değişiklik için uygulamayı yeniden başlatmanız gerekebilir.
                     </Text>
                 </View>
-
-                <TouchableOpacity
-                    style={styles.applyButton}
-                    onPress={() => {
-                        // In a real app, this would change the language
-                        navigation.goBack();
-                    }}
-                >
-                    <Text style={styles.applyButtonText}>Apply Language</Text>
-                </TouchableOpacity>
-            </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }
@@ -101,11 +100,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
         backgroundColor: '#fff',
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        borderBottomColor: '#E5E5E5',
+    },
+    backButton: {
+        padding: 4,
     },
     headerTitle: {
         fontSize: 18,
@@ -113,85 +115,57 @@ const styles = StyleSheet.create({
         color: '#000',
     },
     content: {
-        flex: 1,
         padding: 20,
     },
-    section: {
-        marginBottom: 24,
-    },
     sectionTitle: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '600',
-        color: '#999',
+        color: '#666',
         marginBottom: 12,
         marginLeft: 4,
         letterSpacing: 1,
     },
-    languageCard: {
+    optionsContainer: {
+        backgroundColor: 'white',
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        marginBottom: 24,
+    },
+    optionItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 8,
-        borderWidth: 2,
-        borderColor: 'transparent',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
     },
-    languageCardSelected: {
-        borderColor: '#0066FF',
-        backgroundColor: '#F0F7FF',
+    lastOptionItem: {
+        borderBottomWidth: 0,
     },
-    languageLeft: {
+    optionLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        flex: 1,
     },
     flag: {
-        fontSize: 32,
-        marginRight: 16,
+        fontSize: 24,
+        marginRight: 12,
     },
-    languageInfo: {
-        flex: 1,
-    },
-    languageName: {
+    optionLabel: {
         fontSize: 16,
-        fontWeight: 'bold',
         color: '#333',
-        marginBottom: 2,
     },
-    languageNameSelected: {
-        color: '#0066FF',
-    },
-    languageNative: {
-        fontSize: 14,
-        color: '#666',
-    },
-    infoBox: {
+    infoCard: {
         flexDirection: 'row',
-        backgroundColor: '#E3F2FD',
+        backgroundColor: '#FFF',
         padding: 16,
         borderRadius: 12,
-        gap: 12,
-        marginBottom: 16,
+        alignItems: 'flex-start',
     },
     infoText: {
         flex: 1,
         fontSize: 13,
         color: '#666',
+        marginLeft: 12,
         lineHeight: 18,
     },
-    applyButton: {
-        backgroundColor: '#0066FF',
-        padding: 16,
-        borderRadius: 12,
-        alignItems: 'center',
-        marginBottom: 32,
-    },
-    applyButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
 });
-

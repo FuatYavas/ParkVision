@@ -12,13 +12,22 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function ParkingDetailScreen({ route, navigation }) {
     // Use params if available, otherwise mock data
-    const lot = route.params?.lot || {
+    const rawLot = route.params?.lot || {
         name: 'İstinyePark AVM Otoparkı',
         occupancy: 56,
         capacity: 100,
         price: 25,
         isOpen: true,
-        isReservable: true
+        is_active: true
+    };
+
+    // Calculate values based on backend data
+    const lot = {
+        ...rawLot,
+        isOpen: rawLot.isOpen !== undefined ? rawLot.isOpen : (rawLot.is_active !== undefined ? rawLot.is_active : true),
+        isReservable: rawLot.isReservable !== undefined ? rawLot.isReservable : (rawLot.is_active !== undefined ? rawLot.is_active : true),
+        price: rawLot.price || rawLot.hourly_rate || 0,
+        occupancy: rawLot.occupancy || 0
     };
 
     const emptySpots = Math.floor(lot.capacity * (1 - lot.occupancy / 100));

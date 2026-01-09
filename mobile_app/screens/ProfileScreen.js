@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 
 import { getCurrentUser } from '../api';
 
@@ -20,10 +21,17 @@ export default function ProfileScreen({ navigation }) {
         full_name: 'Loading...',
         email: 'Loading...'
     });
+    const [profileImage, setProfileImage] = useState(null);
+    const [settings, setSettings] = useState({
+        theme: 'system',
+        language: 'tr'
+    });
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
             fetchUserProfile();
+            loadProfileImage();
+            loadSettings();
         });
 
         return unsubscribe;
@@ -35,6 +43,111 @@ export default function ProfileScreen({ navigation }) {
             setUser(userData);
         } catch (error) {
             console.log('Failed to fetch user profile:', error);
+        }
+    };
+
+    const loadProfileImage = async () => {
+        try {
+            const savedImage = await AsyncStorage.getItem('profile_image');
+            if (savedImage) {
+                setProfileImage(savedImage);
+            }
+        } catch (error) {
+            console.log('Failed to load profile image:', error);
+        }
+    };
+
+    const handleImageSelection = () => {
+        Alert.alert(
+            'Profil Fotoğrafı',
+            'Fotoğrafınızı değiştirmek için bir yöntem seçin',
+            [
+                {
+                    text: 'Kamera',
+                    onPress: takePhoto
+                },
+                {
+                    text: 'Galeri',
+                    onPress: pickImage
+                },
+                {
+                    text: 'İptal',
+                    style: 'cancel'
+                }
+            ]
+        );
+    };
+
+    const pickImage = async () => {
+        // Galeri izni iste
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('İzin Gerekli', 'Galeriye erişmek için izin vermeniz gerekiyor.');
+            return;
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+        });
+
+        if (!result.canceled) {
+            saveProfileImage(result.assets[0].uri);
+        }
+    };
+
+    const takePhoto = async () => {
+        // Kamera izni iste
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('İzin Gerekli', 'Kamera kullanmak için izin vermeniz gerekiyor.');
+            return;
+        }
+
+        let result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+        });
+
+        if (!result.canceled) {
+            saveProfileImage(result.assets[0].uri);
+        }
+    };
+
+    const saveProfileImage = async (uri) => {
+        try {
+            setProfileImage(uri);
+            await AsyncStorage.setItem('profile_image', uri);
+        } catch (error) {
+            console.log('Failed to save profile image:', error);
+        }
+    };
+
+    const loadSettings = async () => {
+        try {
+            const theme = await AsyncStorage.getItem('app_theme') || 'system';
+            const language = await AsyncStorage.getItem('app_language') || 'tr';
+            setSettings({ theme, language });
+        } catch (error) {
+            console.log('Failed to load settings:', error);
+        }
+    };
+
+    const getThemeLabel = (value) => {
+        switch (value) {
+            case 'light': return 'Açık';
+            case 'dark': return 'Koyu';
+            default: return 'Sistem';
+        }
+    };
+
+    const getLanguageLabel = (value) => {
+        switch (value) {
+            case 'en': return 'English';
+            default: return 'Türkçe';
         }
     };
 
@@ -57,8 +170,8 @@ export default function ProfileScreen({ navigation }) {
             title: 'AYARLAR',
             items: [
                 { icon: 'notifications-outline', label: 'Bildirimler', route: 'Notifications', active: true },
-                { icon: 'moon-outline', label: 'Görünüm', value: 'Sistem', route: 'Appearance', active: false },
-                { icon: 'globe-outline', label: 'Dil', value: 'Türkçe', route: 'Language', active: false },
+                { icon: 'moon-outline', label: 'Görünüm', value: getThemeLabel(settings.theme), route: 'Appearance', active: true },
+                { icon: 'globe-outline', label: 'Dil', value: getLanguageLabel(settings.language), route: 'Language', active: true },
             ]
         }
     ];
@@ -105,13 +218,33 @@ export default function ProfileScreen({ navigation }) {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 {/* Profile Info */}
                 <View style={styles.profileInfo}>
-                    <Image
-                        source={{ uri: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop' }}
-                        style={styles.avatar}
-                    />
+                    <TouchableOpacity onPress={handleImageSelection} style={styles.avatarContainer}>
+                        <Image
+                            source={{ uri: profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop' }}
+                            style={styles.avatar}
+                        />
+                        <View style={styles.cameraIconContainer}>
+                            <Ionicons name="camera" size={20} color="white" />
+                        </View>
+                    </TouchableOpacity>
                     <Text style={styles.name}>{user.full_name}</Text>
                     <Text style={styles.email}>{user.email}</Text>
                 </View>
+
+                {/* Quick Actions */}
+                <TouchableOpacity
+                    style={styles.searchParkingButton}
+                    onPress={() => navigation.navigate('Map')}
+                >
+                    <View style={styles.searchParkingIcon}>
+                        <Ionicons name="search" size={24} color="#0066FF" />
+                    </View>
+                    <View style={styles.searchParkingTextContainer}>
+                        <Text style={styles.searchParkingTitle}>Otopark Ara</Text>
+                        <Text style={styles.searchParkingSubtitle}>Yakınındaki otoparkları keşfet</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={24} color="#0066FF" />
+                </TouchableOpacity>
 
                 {/* Menu Items */}
                 {menuItems.map((section, index) => (
@@ -190,11 +323,35 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        marginBottom: 16,
+        width: 120,
+        height: 120,
+        borderRadius: 60,
         borderWidth: 4,
+        borderColor: 'white',
+    },
+    avatarContainer: {
+        position: 'relative',
+        marginBottom: 16,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 5,
+    },
+    cameraIconContainer: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        backgroundColor: '#0066FF',
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
         borderColor: 'white',
     },
     name: {
@@ -280,5 +437,35 @@ const styles = StyleSheet.create({
         color: '#F44336',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    searchParkingButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E3F2FD',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 24,
+    },
+    searchParkingIcon: {
+        width: 48,
+        height: 48,
+        backgroundColor: 'white',
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    searchParkingTextContainer: {
+        flex: 1,
+    },
+    searchParkingTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#0066FF',
+        marginBottom: 2,
+    },
+    searchParkingSubtitle: {
+        fontSize: 12,
+        color: '#666',
     },
 });

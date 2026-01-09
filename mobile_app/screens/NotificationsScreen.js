@@ -59,7 +59,7 @@ export default function NotificationsScreen({ navigation }) {
 
     const toggleSetting = (key) => {
         const newSettings = { ...settings, [key]: !settings[key] };
-        
+
         // Eğer ana bildirimler kapatılırsa, tüm alt ayarları da kapat
         if (key === 'pushEnabled' && !newSettings.pushEnabled) {
             newSettings.reservationReminders = false;
@@ -68,7 +68,7 @@ export default function NotificationsScreen({ navigation }) {
             newSettings.priceAlerts = false;
             newSettings.expiryWarnings = false;
         }
-        
+
         saveSettings(newSettings);
     };
 
@@ -141,17 +141,17 @@ export default function NotificationsScreen({ navigation }) {
 
     const renderSettingItem = (item) => {
         const isDisabled = !settings.pushEnabled && !item.isMain;
-        
+
         return (
-            <View 
-                key={item.key} 
+            <View
+                key={item.key}
                 style={[styles.settingItem, isDisabled && styles.settingItemDisabled]}
             >
                 <View style={[styles.iconContainer, item.isMain && styles.iconContainerMain]}>
-                    <Ionicons 
-                        name={item.icon} 
-                        size={22} 
-                        color={item.isMain ? '#0066FF' : (isDisabled ? '#CCC' : '#666')} 
+                    <Ionicons
+                        name={item.icon}
+                        size={22}
+                        color={item.isMain ? '#0066FF' : (isDisabled ? '#CCC' : '#666')}
                     />
                 </View>
                 <View style={styles.settingContent}>
@@ -189,17 +189,17 @@ export default function NotificationsScreen({ navigation }) {
                     styles.statusBanner,
                     settings.pushEnabled ? styles.statusBannerEnabled : styles.statusBannerDisabled
                 ]}>
-                    <Ionicons 
-                        name={settings.pushEnabled ? "notifications" : "notifications-off"} 
-                        size={24} 
-                        color={settings.pushEnabled ? "#4CAF50" : "#F44336"} 
+                    <Ionicons
+                        name={settings.pushEnabled ? "notifications" : "notifications-off"}
+                        size={24}
+                        color={settings.pushEnabled ? "#4CAF50" : "#F44336"}
                     />
                     <Text style={[
                         styles.statusText,
                         { color: settings.pushEnabled ? "#4CAF50" : "#F44336" }
                     ]}>
-                        {settings.pushEnabled 
-                            ? "Bildirimler açık" 
+                        {settings.pushEnabled
+                            ? "Bildirimler açık"
                             : "Bildirimler kapalı"}
                     </Text>
                 </View>
@@ -217,7 +217,7 @@ export default function NotificationsScreen({ navigation }) {
                 <View style={styles.infoCard}>
                     <Ionicons name="information-circle-outline" size={20} color="#666" />
                     <Text style={styles.infoText}>
-                        Bildirim ayarlarını değiştirmek için cihazınızın sistem ayarlarından da 
+                        Bildirim ayarlarını değiştirmek için cihazınızın sistem ayarlarından da
                         uygulama bildirimlerini yönetebilirsiniz.
                     </Text>
                 </View>
@@ -227,12 +227,16 @@ export default function NotificationsScreen({ navigation }) {
                     <TouchableOpacity
                         style={styles.testButton}
                         onPress={async () => {
-                            await schedulePushNotification({
-                                title: '🎉 Test Bildirimi',
-                                body: 'Push notification başarıyla çalışıyor!',
-                                data: { type: 'test' }
-                            });
-                            Alert.alert('Başarılı', 'Test bildirimi gönderildi!');
+                            try {
+                                await schedulePushNotification({
+                                    title: '🎉 Test Bildirimi',
+                                    body: 'Push notification başarıyla çalışıyor!',
+                                    data: { type: 'test' }
+                                });
+                                Alert.alert('Başarılı', 'Test bildirimi gönderildi!');
+                            } catch (error) {
+                                Alert.alert('Hata', 'Bildirim gönderilemedi: ' + error.message);
+                            }
                         }}
                     >
                         <Ionicons name="flask-outline" size={20} color="#0066FF" />

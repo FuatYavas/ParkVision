@@ -19,6 +19,8 @@ import VehiclesScreen from './screens/VehiclesScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
+import AppearanceScreen from './screens/AppearanceScreen';
+import LanguageScreen from './screens/LanguageScreen';
 import PlaceholderScreen from './screens/PlaceholderScreen';
 
 const Stack = createNativeStackNavigator();
@@ -175,18 +177,26 @@ export default function App() {
           component={MyReservationsScreen}
           options={{ title: 'Reservation History' }}
         />
-        <Stack.Screen 
-          name="Favorites" 
+        <Stack.Screen
+          name="Favorites"
           component={FavoritesScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="Notifications" 
+        <Stack.Screen
+          name="Notifications"
           component={NotificationsScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="Appearance" component={PlaceholderScreen} initialParams={{ title: 'Appearance' }} />
-        <Stack.Screen name="Language" component={PlaceholderScreen} initialParams={{ title: 'Language' }} />
+        <Stack.Screen
+          name="Appearance"
+          component={AppearanceScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Language"
+          component={LanguageScreen}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
