@@ -1,33 +1,48 @@
 # ParkVision - Proje İlerleme Raporu
+**Son Güncelleme:** 9 Ocak 2026
+
 ---
 
 ## 1. YÖNETİCİ ÖZETİ
 
-ParkVision, gerçek zamanlı park yeri algılama ve rezervasyon sistemi sunan kapsamlı bir akıllı otopark yönetim platformudur. Proje, mobil uygulama, web yönetim paneli, backend API ve bilgisayarlı görü modülünden oluşmaktadır. Mevcut durumda backend altyapısı ve mobil uygulama büyük ölçüde tamamlanmış olup, bilgisayarlı görü entegrasyonu için YoloV8 modeli kullanılacaktır.
+ParkVision, YOLOv8 tabanlı bilgisayarlı görü teknolojisi kullanarak gerçek zamanlı park yeri algılama ve rezervasyon sistemi sunan kapsamlı bir akıllı otopark yönetim platformudur. Proje, mobil uygulama, web yönetim paneli, backend API ve bilgisayarlı görü modülünden oluşmaktadır. 
+
+**Önemli Gelişme:** Roboflow YOLOv8 modeli başarıyla entegre edildi ve 5 farklı otopark görselinde gerçek zamanlı detection testi tamamlandı.
 
 ---
 
-## 2. KULLANILACAK YAPAY ZEKA MODELİ
+## 2. KULLANILAN YAPAY ZEKA MODELİ
 
 ### 2.1 Roboflow Model Bilgileri
 
 | Özellik | Değer |
 |---------|-------|
-| **Proje Adı** | ParkVision |
-| **Kullanım Amacı** | Park alanlarının dolu/boş durumunun gerçek zamanlı tespiti |
-| **Model Tipi** | YOLOv8 Nesne Algılama |
-| **Veri Seti Kaynağı** | Roboflow Universe |
+| **Model Tipi** | YOLOv8 Object Detection |
+| **Model ID** | car-parking-xutja/1 |
+| **API Endpoint** | https://serverless.roboflow.com |
+| **Sınıflar** | space-empty, space-occupied |
+| **Kullanım** | REST API (Python + PIL) |
+| **Durum** | ✅ **Aktif ve Çalışıyor** |
 
-### 2.2 Model Kullanım Senaryosu
+### 2.2 Model Performansı
+
+**Test Sonuçları (5 Otopark Görseli):**
+- Resim 1: 98 detection
+- Resim 2: 41 detection
+- Resim 3: 41 detection
+- Resim 4: 43 detection
+- Resim 5: 39 detection
+
+**Renk Kodlaması:**
+- 🟢 Yeşil: Boş park yerleri (space-empty)
+- 🔴 Kırmızı: Dolu park yerleri (space-occupied)
+
+### 2.3 Model Kullanım Akışı
 
 ```
-Kamera Görüntüsü → Roboflow API → Park Yeri Durumu → Backend API → Mobil Uygulama
+Kamera Görüntüsü → process_parking_images.py → Roboflow API → 
+Bounding Box Drawing → Backend API → Mobil Uygulama (Gerçek Zamanlı)
 ```
-
-- Otopark kameralarından alınan görüntüler Roboflow modeline gönderilecek
-- Model, her park yerinin dolu/boş durumunu tespit edecek
-- Sonuçlar backend API üzerinden veritabanına kaydedilecek
-- Mobil uygulama gerçek zamanlı doluluk bilgisini gösterecek
 
 ---
 
@@ -37,14 +52,14 @@ Kamera Görüntüsü → Roboflow API → Park Yeri Durumu → Backend API → M
 
 | Bileşen | Tamamlanma Oranı | Durum |
 |---------|------------------|-------|
-| Backend API | %90 | Tamamlandı |
-| Veritabanı | %95 | Tamamlandı |
-| Mobil Uygulama | %75 | Büyük ölçüde tamamlandı |
-| Web Yönetim Paneli | %40 | Temel yapı hazır |
-| CV Modülü | %10 | İskelet yapı mevcut |
-| Docker Altyapısı | %100 | Tamamlandı |
+| Backend API | %90 | ✅ Tamamlandı |
+| Veritabanı | %95 | ✅ Tamamlandı |
+| Mobil Uygulama | %85 | ✅ CV entegrasyonu yapıldı |
+| Web Yönetim Paneli | %40 | 🟡 Temel yapı hazır |
+| CV Modülü | %80 | ✅ Roboflow entegre edildi |
+| Docker Altyapısı | %100 | ✅ Tamamlandı |
 
-**Toplam Proje İlerlemesi: ~%65**
+**Toplam Proje İlerlemesi: ~%78**
 
 ---
 

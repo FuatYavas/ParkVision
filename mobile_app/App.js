@@ -115,7 +115,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Onboarding">
+      <Stack.Navigator initialRouteName="Main">
         <Stack.Screen
           name="Onboarding"
           component={OnboardingScreen}
