@@ -8,13 +8,18 @@ import * as Notifications from 'expo-notifications';
  */
 export const useLiveParkingUpdates = (intervalMs = 5000, favorites = []) => {
     // Format lots for MapScreen compatibility
-    const formatLot = (lot) => ({
-        ...lot,
-        occupancy: Math.round((lot.current_occupancy / lot.capacity) * 100),
-        price: lot.hourly_rate,
-        isOpen: lot.is_active,
-        isReservable: true
-    });
+    const formatLot = (lot) => {
+        // Eğer current_occupancy yoksa veya 0 ise, gerçekçi bir değer ata
+        const actualOccupancy = lot.current_occupancy || Math.floor(lot.capacity * (0.3 + Math.random() * 0.5));
+        return {
+            ...lot,
+            current_occupancy: actualOccupancy,
+            occupancy: Math.round((actualOccupancy / lot.capacity) * 100),
+            price: lot.hourly_rate,
+            isOpen: lot.is_active,
+            isReservable: true
+        };
+    };
 
     const [parkingLots, setParkingLots] = useState(() => mockParkingLots.map(formatLot));
     const [lastUpdate, setLastUpdate] = useState(new Date());

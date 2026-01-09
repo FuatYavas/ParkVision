@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // For physical device testing, use your computer's local IP
 // Physical Device: Use your computer's WiFi IP address
 const API_URL = __DEV__
-    ? 'http://10.118.237.229:8000'  // Physical Device -> Computer's Ethernet/WiFi IP (updated 2026-01-09)
+    ? 'http://10.57.224.70:8000'  // Physical Device -> Computer's Ethernet/WiFi IP (updated 2026-01-09)
     : 'http://localhost:8000';  // For production
 
 const api = axios.create({

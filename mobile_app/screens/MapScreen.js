@@ -20,9 +20,92 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useLiveParkingUpdates from '../hooks/useLiveParkingUpdates';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const FAVORITES_KEY = 'favorite_parking_lots';
+
+// Dark map style for night mode
+const darkMapStyle = [
+    { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+    {
+        featureType: "administrative.locality",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#d59563" }]
+    },
+    {
+        featureType: "poi",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#d59563" }]
+    },
+    {
+        featureType: "poi.park",
+        elementType: "geometry",
+        stylers: [{ color: "#263c3f" }]
+    },
+    {
+        featureType: "poi.park",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#6b9a76" }]
+    },
+    {
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [{ color: "#38414e" }]
+    },
+    {
+        featureType: "road",
+        elementType: "geometry.stroke",
+        stylers: [{ color: "#212a37" }]
+    },
+    {
+        featureType: "road",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#9ca5b3" }]
+    },
+    {
+        featureType: "road.highway",
+        elementType: "geometry",
+        stylers: [{ color: "#746855" }]
+    },
+    {
+        featureType: "road.highway",
+        elementType: "geometry.stroke",
+        stylers: [{ color: "#1f2835" }]
+    },
+    {
+        featureType: "road.highway",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#f3d19c" }]
+    },
+    {
+        featureType: "transit",
+        elementType: "geometry",
+        stylers: [{ color: "#2f3948" }]
+    },
+    {
+        featureType: "transit.station",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#d59563" }]
+    },
+    {
+        featureType: "water",
+        elementType: "geometry",
+        stylers: [{ color: "#17263c" }]
+    },
+    {
+        featureType: "water",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#515c6d" }]
+    },
+    {
+        featureType: "water",
+        elementType: "labels.text.stroke",
+        stylers: [{ color: "#17263c" }]
+    }
+];
 
 // Helper function to get marker color based on occupancy
 const getMarkerColor = (occupancy) => {
@@ -33,6 +116,7 @@ const getMarkerColor = (occupancy) => {
 };
 
 export default function MapScreen({ navigation }) {
+    const { colors, isDark } = useTheme();
     const [location, setLocation] = useState(null);
     const [selectedLot, setSelectedLot] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -120,8 +204,6 @@ export default function MapScreen({ navigation }) {
                     [{ text: 'Tamam' }]
                 );
                 setHasLocationPermission(false);
-                // Konum yokken de mock data yükle
-                loadMockData();
                 return;
             }
 
@@ -132,12 +214,8 @@ export default function MapScreen({ navigation }) {
                     accuracy: Location.Accuracy.High
                 });
                 setLocation(currentLocation);
-                // Konum alındığında gerçek mesafelerle yükle
-                loadMockData(currentLocation.coords.latitude, currentLocation.coords.longitude);
             } catch (error) {
                 console.error('Error getting location:', error);
-                // Konum alınamazsa varsayılan değerlerle yükle
-                loadMockData();
             }
         })();
 
@@ -170,82 +248,8 @@ export default function MapScreen({ navigation }) {
         }
     };
 
-<<<<<<< HEAD
-    // Calculate distance between two coordinates in km
-    const calculateDistance = (lat1, lon1, lat2, lon2) => {
-        const R = 6371; // Earth's radius in km
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    };
-
-    const loadMockData = (userLat = null, userLon = null) => {
-        // Temel otoparkları formatla
-        let allLots = [...mockParkingLots];
-
-        // Kullanıcı konumu varsa, etrafına dinamik otoparklar ekle
-        if (userLat && userLon) {
-            const dynamicLots = generateDynamicParkingLots(userLat, userLon, 6);
-            allLots = [...allLots, ...dynamicLots];
-        }
-
-        const formattedLots = allLots.map(lot => {
-            let distance = lot.distance;
-            let distanceValue = 0;
-
-            // Kullanıcı konumu varsa gerçek mesafeyi hesapla
-            if (userLat && userLon) {
-                const dist = calculateDistance(userLat, userLon, lot.latitude, lot.longitude);
-                distance = dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`;
-                distanceValue = dist;
-            } else {
-                // Fallback: string'den parse et
-                if (typeof lot.distance === 'string') {
-                    const match = lot.distance.match(/([\d.]+)\s*(m|km)?/i);
-                    if (match) {
-                        distanceValue = parseFloat(match[1]);
-                        if (match[2] && match[2].toLowerCase() === 'm') {
-                            distanceValue = distanceValue / 1000;
-                        }
-                    }
-                }
-            }
-
-            return {
-                id: lot.id,
-                name: lot.name,
-                latitude: lot.latitude,
-                longitude: lot.longitude,
-                occupancy: Math.round((lot.current_occupancy / lot.capacity) * 100) || 0,
-                price: lot.hourly_rate || 0,
-                distance: distance,
-                distanceValue: distanceValue,
-                rating: parseFloat(lot.rating) || 4.0,
-                isOpen: lot.is_active,
-                is_active: lot.is_active,
-                capacity: lot.capacity,
-                features: lot.features || []
-            };
-        });
-
-        // Mesafeye göre sırala
-        formattedLots.sort((a, b) => a.distanceValue - b.distanceValue);
-
-        setAllParkingLots(formattedLots);
-        setParkingLots(formattedLots);
-    };
-
-    // Filter and search parking lots
-    const applyFilters = () => {
-=======
     // Filter and search parking lots (computed value)
     const getFilteredParkingLots = () => {
->>>>>>> develop
         let filtered = [...allParkingLots];
 
         // Apply search
@@ -667,7 +671,7 @@ export default function MapScreen({ navigation }) {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <MapView
                 ref={mapRef}
                 style={styles.map}
@@ -675,6 +679,7 @@ export default function MapScreen({ navigation }) {
                 showsUserLocation={true}
                 showsMyLocationButton={false}
                 onPress={() => setSelectedLot(null)}
+                customMapStyle={isDark ? darkMapStyle : []}
             >
                 {displayedParkingLots.map((lot) => (
                     <Marker
@@ -715,11 +720,12 @@ export default function MapScreen({ navigation }) {
 
             {/* Top Bar */}
             <SafeAreaView style={styles.topContainer}>
-                <View style={styles.searchBar}>
-                    <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+                <View style={[styles.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
                     <TextInput
-                        style={styles.searchInput}
+                        style={[styles.searchInput, { color: colors.text }]}
                         placeholder="Yakındaki otoparkları ara"
+                        placeholderTextColor={colors.textSecondary}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
@@ -734,42 +740,68 @@ export default function MapScreen({ navigation }) {
                     <TouchableOpacity
                         style={[
                             styles.filterChip,
+                            { backgroundColor: colors.card, borderColor: colors.border },
                             (filters.maxPrice || filters.maxDistance || filters.features.length > 0) && styles.filterChipActive
                         ]}
                         onPress={handleMainFilter}
                     >
                         <Ionicons name="options-outline" size={16} color={
-                            (filters.maxPrice || filters.maxDistance || filters.features.length > 0) ? "#0066FF" : "#333"
+                            (filters.maxPrice || filters.maxDistance || filters.features.length > 0) ? colors.primary : colors.text
                         } />
                         <Text style={[
                             styles.filterText,
+                            { color: colors.text },
                             (filters.maxPrice || filters.maxDistance || filters.features.length > 0) && styles.filterTextActive
                         ]}>Filtrele</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.filterChip, filters.maxPrice && styles.filterChipActive]}
+                        style={[
+                            styles.filterChip,
+                            { backgroundColor: colors.card, borderColor: colors.border },
+                            filters.maxPrice && styles.filterChipActive
+                        ]}
                         onPress={handlePriceFilter}
                     >
-                        <Ionicons name="cash-outline" size={16} color={filters.maxPrice ? "#0066FF" : "#333"} />
-                        <Text style={[styles.filterText, filters.maxPrice && styles.filterTextActive]}>
+                        <Ionicons name="cash-outline" size={16} color={filters.maxPrice ? colors.primary : colors.text} />
+                        <Text style={[
+                            styles.filterText,
+                            { color: colors.text },
+                            filters.maxPrice && styles.filterTextActive
+                        ]}>
                             {filters.maxPrice ? `${filters.maxPrice}₺ altı` : 'Fiyat'}
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.filterChip, filters.maxDistance && styles.filterChipActive]}
+                        style={[
+                            styles.filterChip,
+                            { backgroundColor: colors.card, borderColor: colors.border },
+                            filters.maxDistance && styles.filterChipActive
+                        ]}
                         onPress={handleDistanceFilter}
                     >
-                        <Ionicons name="resize-outline" size={16} color={filters.maxDistance ? "#0066FF" : "#333"} />
-                        <Text style={[styles.filterText, filters.maxDistance && styles.filterTextActive]}>
+                        <Ionicons name="resize-outline" size={16} color={filters.maxDistance ? colors.primary : colors.text} />
+                        <Text style={[
+                            styles.filterText,
+                            { color: colors.text },
+                            filters.maxDistance && styles.filterTextActive
+                        ]}>
                             {filters.maxDistance ? `${filters.maxDistance} km` : 'Mesafe'}
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.filterChip, filters.features.length > 0 && styles.filterChipActive]}
+                        style={[
+                            styles.filterChip,
+                            { backgroundColor: colors.card, borderColor: colors.border },
+                            filters.features.length > 0 && styles.filterChipActive
+                        ]}
                         onPress={handleFeaturesFilter}
                     >
-                        <Ionicons name="home-outline" size={16} color={filters.features.length > 0 ? "#0066FF" : "#333"} />
-                        <Text style={[styles.filterText, filters.features.length > 0 && styles.filterTextActive]}>
+                        <Ionicons name="home-outline" size={16} color={filters.features.length > 0 ? colors.primary : colors.text} />
+                        <Text style={[
+                            styles.filterText,
+                            { color: colors.text },
+                            filters.features.length > 0 && styles.filterTextActive
+                        ]}>
                             {filters.features.length > 0 ? `${filters.features.length} özellik` : 'Özellikler'}
                         </Text>
                     </TouchableOpacity>
@@ -777,8 +809,8 @@ export default function MapScreen({ navigation }) {
 
                 {/* Results count */}
                 {searchQuery.trim() || filters.maxPrice || filters.maxDistance || filters.features.length > 0 ? (
-                    <View style={styles.resultsBar}>
-                        <Text style={styles.resultsText}>
+                    <View style={[styles.resultsBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                        <Text style={[styles.resultsText, { color: colors.textSecondary }]}>
                             {displayedParkingLots.length} otopark bulundu
                         </Text>
                         {(filters.maxPrice || filters.maxDistance || filters.features.length > 0 || searchQuery.trim()) && (
@@ -788,7 +820,7 @@ export default function MapScreen({ navigation }) {
                                     setSearchQuery('');
                                 }}
                             >
-                                <Text style={styles.clearFiltersText}>Temizle</Text>
+                                <Text style={[styles.clearFiltersText, { color: colors.primary }]}>Temizle</Text>
                             </TouchableOpacity>
                         )}
                     </View>
@@ -806,7 +838,7 @@ export default function MapScreen({ navigation }) {
                 <Animated.View
                     style={[
                         styles.bottomCardContainer,
-                        { transform: [{ translateY: panY }] }
+                        { backgroundColor: colors.card, transform: [{ translateY: panY }] }
                     ]}
                     {...panResponder.panHandlers}
                 >
@@ -818,13 +850,13 @@ export default function MapScreen({ navigation }) {
                     </TouchableOpacity>
 
                     <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>{selectedLot.name}</Text>
+                        <Text style={[styles.cardTitle, { color: colors.text }]}>{selectedLot.name}</Text>
                         <View style={styles.cardHeaderRight}>
                             <TouchableOpacity
                                 style={styles.closeButton}
                                 onPress={() => setSelectedLot(null)}
                             >
-                                <Ionicons name="close" size={22} color="#666" />
+                                <Ionicons name="close" size={22} color={colors.textSecondary} />
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.favoriteIconButton}
@@ -833,12 +865,12 @@ export default function MapScreen({ navigation }) {
                                 <Ionicons
                                     name={favorites.includes(selectedLot.id) ? "heart" : "heart-outline"}
                                     size={22}
-                                    color={favorites.includes(selectedLot.id) ? "#EF4444" : "#666"}
+                                    color={favorites.includes(selectedLot.id) ? "#EF4444" : colors.textSecondary}
                                 />
                             </TouchableOpacity>
                             <View style={styles.ratingContainer}>
                                 <Ionicons name="star" size={16} color="#FFC107" />
-                                <Text style={styles.ratingText}>{selectedLot.rating}</Text>
+                                <Text style={[styles.ratingText, { color: colors.text }]}>{selectedLot.rating}</Text>
                             </View>
                         </View>
                     </View>
@@ -863,12 +895,12 @@ export default function MapScreen({ navigation }) {
 
                     <View style={styles.occupancyContainer}>
                         <View style={styles.occupancyHeader}>
-                            <Text style={styles.occupancyLabel}>Doluluk</Text>
+                            <Text style={[styles.occupancyLabel, { color: colors.textSecondary }]}>Doluluk</Text>
                             <Text style={[styles.occupancyValue, { color: getMarkerColor(selectedLot.occupancy) }]}>
                                 {selectedLot.occupancy}% Dolu
                             </Text>
                         </View>
-                        <View style={styles.progressBarBg}>
+                        <View style={[styles.progressBarBg, { backgroundColor: isDark ? '#2C2C2E' : '#F0F0F0' }]}>
                             <View
                                 style={[
                                     styles.progressBarFill,
@@ -883,15 +915,15 @@ export default function MapScreen({ navigation }) {
 
                     <View style={styles.actionButtons}>
                         <TouchableOpacity
-                            style={styles.navButton}
+                            style={[styles.navButton, { backgroundColor: isDark ? '#1C1C1E' : '#E3F2FD' }]}
                             onPress={() => navigation.navigate('Navigation')}
                         >
-                            <Ionicons name="navigate-outline" size={20} color="#333" />
-                            <Text style={styles.navButtonText}>Navigasyon</Text>
+                            <Ionicons name="navigate-outline" size={20} color={colors.primary} />
+                            <Text style={[styles.navButtonText, { color: colors.text }]}>Navigasyon</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={styles.reserveButton}
+                            style={[styles.reserveButton, { backgroundColor: colors.primary }]}
                             onPress={() => navigation.navigate('ParkingDetail', { lot: selectedLot })}
                         >
                             <Ionicons name="calendar-outline" size={20} color="white" />

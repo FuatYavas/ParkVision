@@ -13,10 +13,33 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import { useTheme } from '../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
+const darkMapStyle = [
+    { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+    { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+    { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+    { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] },
+    { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+    { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+    { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+    { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
+    { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
+    { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+    { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+    { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+    { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] }
+];
+
 export default function FindMyCarScreen({ route, navigation }) {
+    const { colors, isDark } = useTheme();
     const [userLocation, setUserLocation] = useState(null);
     const [showRoute, setShowRoute] = useState(false);
     const [walkingInfo, setWalkingInfo] = useState({ distance: 0, duration: 0 });
@@ -105,13 +128,13 @@ export default function FindMyCarScreen({ route, navigation }) {
     };
 
     return (
-        <View style={styles.container}>
-            <SafeAreaView style={styles.headerContainer}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            <SafeAreaView style={[styles.headerContainer, { backgroundColor: colors.card }]}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="chevron-back" size={24} color="#000" />
+                        <Ionicons name="chevron-back" size={24} color={colors.text} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Park Yeri Bulucum</Text>
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>Park Yeri Bulucum</Text>
                     <View style={{ width: 24 }} />
                 </View>
             </SafeAreaView>
@@ -121,6 +144,7 @@ export default function FindMyCarScreen({ route, navigation }) {
                 style={styles.map}
                 initialRegion={initialRegion}
                 showsUserLocation={true}
+                customMapStyle={isDark ? darkMapStyle : []}
             >
                 {/* Parked Car Marker */}
                 <Marker coordinate={parkedLocation}>
@@ -149,37 +173,37 @@ export default function FindMyCarScreen({ route, navigation }) {
 
             {/* Walking Info Card - Shows when route is active */}
             {showRoute && walkingInfo.distance > 0 && (
-                <View style={styles.walkingInfoCard}>
+                <View style={[styles.walkingInfoCard, { backgroundColor: colors.card }]}>
                     <View style={styles.walkingInfoRow}>
                         <View style={styles.walkingInfoItem}>
                             <Ionicons name="walk" size={20} color="#4CAF50" />
-                            <Text style={styles.walkingInfoValue}>{formatDistance(walkingInfo.distance)}</Text>
+                            <Text style={[styles.walkingInfoValue, { color: colors.text }]}>{formatDistance(walkingInfo.distance)}</Text>
                         </View>
-                        <View style={styles.walkingInfoDivider} />
+                        <View style={[styles.walkingInfoDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.walkingInfoItem}>
-                            <Ionicons name="time-outline" size={20} color="#0066FF" />
-                            <Text style={styles.walkingInfoValue}>{formatDuration(walkingInfo.duration)}</Text>
+                            <Ionicons name="time-outline" size={20} color={colors.primary} />
+                            <Text style={[styles.walkingInfoValue, { color: colors.text }]}>{formatDuration(walkingInfo.duration)}</Text>
                         </View>
                     </View>
                 </View>
             )}
 
-            <View style={styles.bottomCard}>
+            <View style={[styles.bottomCard, { backgroundColor: colors.card }]}>
                 <View style={styles.locationInfo}>
                     <Image
                         source={{ uri: 'https://images.unsplash.com/photo-1590674899505-1c5c4195e969?q=80&w=200&auto=format&fit=crop' }}
                         style={styles.parkImage}
                     />
                     <View style={styles.textInfo}>
-                        <Text style={styles.locationTitle}>{parkingLot.name}</Text>
-                        <Text style={styles.spotInfo}>Park Yeri: {spotNumber}</Text>
-                        <Text style={styles.timeInfo}>Park Edildi: Az önce</Text>
+                        <Text style={[styles.locationTitle, { color: colors.text }]}>{parkingLot.name}</Text>
+                        <Text style={[styles.spotInfo, { color: colors.primary }]}>Park Yeri: {spotNumber}</Text>
+                        <Text style={[styles.timeInfo, { color: colors.textSecondary }]}>Park Edildi: Az önce</Text>
                     </View>
                 </View>
 
                 {!showRoute ? (
                     <TouchableOpacity
-                        style={styles.primaryButton}
+                        style={[styles.primaryButton, { backgroundColor: colors.primary }]}
                         onPress={handleShowRoute}
                     >
                         <Ionicons name="walk-outline" size={20} color="white" />
@@ -187,7 +211,7 @@ export default function FindMyCarScreen({ route, navigation }) {
                     </TouchableOpacity>
                 ) : (
                     <TouchableOpacity
-                        style={styles.primaryButton}
+                        style={[styles.primaryButton, { backgroundColor: colors.primary }]}
                         onPress={openWalkingNavigation}
                     >
                         <Ionicons name="navigate" size={20} color="white" />
@@ -196,11 +220,11 @@ export default function FindMyCarScreen({ route, navigation }) {
                 )}
 
                 <TouchableOpacity
-                    style={styles.secondaryButton}
+                    style={[styles.secondaryButton, { backgroundColor: isDark ? '#1C1C1E' : '#F5F7FA' }]}
                     onPress={() => Alert.alert('Başarılı', 'Park konumu güncellendi.')}
                 >
-                    <Ionicons name="refresh-outline" size={20} color="#0066FF" />
-                    <Text style={styles.secondaryButtonText}>Park Konumunu Güncelle</Text>
+                    <Ionicons name="refresh-outline" size={20} color={colors.primary} />
+                    <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>Park Konumunu Güncelle</Text>
                 </TouchableOpacity>
             </View>
         </View>

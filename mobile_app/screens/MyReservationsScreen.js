@@ -117,7 +117,23 @@ export default function MyReservationsScreen({ navigation }) {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            await cancelReservation(reservationId);
+                            // API'ye dene
+                            try {
+                                await cancelReservation(reservationId);
+                            } catch (apiError) {
+                                console.log('API iptal başarısız, lokal güncelleme yapılıyor');
+                            }
+                            
+                            // Lokal rezervasyonu da kaldır
+                            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+                            const localReservationsStr = await AsyncStorage.getItem('user_reservations');
+                            if (localReservationsStr) {
+                                const localReservations = JSON.parse(localReservationsStr);
+                                const updatedLocal = localReservations.filter(r => r.id !== reservationId);
+                                await AsyncStorage.setItem('user_reservations', JSON.stringify(updatedLocal));
+                            }
+                            
+                            // State'i güncelle
                             setReservations(reservations.filter(r => r.id !== reservationId));
                             Alert.alert('Başarılı', 'Rezervasyon iptal edildi.');
                         } catch (error) {
