@@ -28,7 +28,6 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.parkvision.app",
-      "edgeToEdgeEnabled": true,
       "usesCleartextTraffic": true,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
@@ -48,6 +47,11 @@
           }
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7f19308a-5e93-45be-8f5d-9df456651a05"
+      }
+    }
   }
 }

@@ -27,14 +27,23 @@ ParkVision is a real-time smart parking management system with computer vision. 
 - **CV Integration**: CV module posts to `/cv/parking-lots/{id}/status` endpoint - see [backend/app/routers/cv.py](backend/app/routers/cv.py)
 
 ### Mobile App (React Native) Specifics
-- **API URL**: Hardcoded to WiFi IP `192.168.1.133:8000` in [mobile_app/api.js](mobile_app/api.js) - update when network changes
-- **Auth Storage**: JWT token stored in AsyncStorage, auto-injected via axios interceptor
+- **API URL**: Hardcoded WiFi IP in [mobile_app/api.js](mobile_app/api.js) - update when network changes. Use `__DEV__` ternary for dev/prod URLs
+- **Auth Storage**: JWT token stored in AsyncStorage, auto-injected via axios interceptor in [mobile_app/api.js](mobile_app/api.js)
 - **Mock Data**: Fallback to [mobile_app/data/mockData.js](mobile_app/data/mockData.js) when backend unavailable
 - **OAuth2 Login**: Use `application/x-www-form-urlencoded` format for `/token` endpoint, NOT JSON
+- **Theme System**: NEVER use hardcoded colors (`#000`, `#333`, `#666`). Always use `colors` from `useTheme()` hook:
+  ```javascript
+  const { colors, isDark } = useTheme();
+  // Use: colors.text, colors.textSecondary, colors.background, colors.card, colors.primary
+  ```
+- **AsyncStorage Patterns**: Reservation state persisted to `user_reservations` key. See [mobile_app/screens/FindMyCarScreen.js](mobile_app/screens/FindMyCarScreen.js) for load/save examples
+- **Navigation**: Use `navigation.navigate('Main', { screen: 'Home' })` for nested navigator targets
+- **Mock Data Fixed Values**: `generateMockSpots()` uses `fixedOccupiedCount` for lotId=2 (Merkez Park) to ensure exactly 5 occupied, 20 empty spots
+- **Notification Handling**: Expo Go limitations require local-only notifications. LogBox filters in [mobile_app/App.js](mobile_app/App.js) suppress expo-notifications warnings
 - **Client-Side Logic**: `getNearbyParkingLots()` uses Haversine distance calculation since backend lacks geospatial queries
 
 ### CV Module Integration
-- **Roboflow API**: Uses YOLOv8 model, key stored in docker-compose.yml env vars
+- **Roboflow API**: Uses YOLOv8 model `car-parking-xutja/1`, key stored in docker-compose.yml env vars
 - **Processing Modes**: `image`, `video`, `stream` - see [cv_module/processor.py](cv_module/processor.py) argparse
 - **Backend Updates**: Posts detection results every `PROCESSING_INTERVAL` (default 2s) to backend
 - **Spot Mapping**: CV detections must map to existing `ParkingSpot` records via spot_number
@@ -70,6 +79,10 @@ cd mobile_app
 npm install
 npm start  # Opens Expo dev server
 # Press 'a' for Android emulator, 'i' for iOS, scan QR for physical device
+
+# Build APK for production
+npx eas-cli login
+npx eas build -p android --profile preview
 ```
 
 ### CV Module Testing
@@ -115,11 +128,19 @@ python seed_data.py
 
 **Mobile can't connect to backend**: Update `API_URL` in [mobile_app/api.js](mobile_app/api.js) to your computer's WiFi IP. Test with `curl http://YOUR_IP:8000/health`
 
+**Dark theme text invisible**: Check for hardcoded colors (`#000`, `#333`, `#666`). Replace with `colors.text` or `colors.textSecondary` from ThemeContext
+
 **CV module not detecting**: Check `ROBOFLOW_API_KEY` in docker-compose.yml, verify `CONFIDENCE_THRESHOLD` (default 0.5)
 
 **WebSocket not working**: Ensure Redis is running (`docker ps | grep redis`). WebSocket manager requires Redis for pub/sub
 
 **Database schema mismatch**: Run `docker-compose down -v` to reset volumes, then `docker-compose up -d` to recreate
+
+**AsyncStorage data not persisting**: Always use `JSON.stringify()` when saving and `JSON.parse()` when loading complex objects
+
+**Expo notification warnings**: Filter in LogBox.ignoreLogs and console method overrides - see [mobile_app/App.js](mobile_app/App.js) pattern
+
+**APK build fails**: Check [mobile_app/app.json](mobile_app/app.json) for incompatible properties (e.g., `edgeToEdgeEnabled` on older Android)
 
 ## File Structure Patterns
 
@@ -136,5 +157,14 @@ After changes:
 2. **API**: Test with `curl http://localhost:8000/health`
 3. **Mobile**: Verify API connection on app startup (login screen)
 4. **CV**: Run `test_detection.py` with sample image before full integration
+5. **Theme**: Test both light and dark modes - check for hardcoded colors
+6. **AsyncStorage**: Verify persistence by closing/reopening app
 
-See [ILERLEME_RAPORU.md](ILERLEME_RAPORU.md) for current project status (~65% complete) and [MOBILE_INTEGRATION.md](MOBILE_INTEGRATION.md) for mobile-specific setup details.
+## Development Tips
+- **Mobile Theme System**: Always use `const { colors, isDark } = useTheme()` - never hardcode colors
+- **Mock Data Control**: To fix occupancy for specific lots, set `fixedOccupiedCount` in `generateMockSpots()`
+- **Navigation Flow**: Reservation success navigates to Home, not FindMyCar (allows user to check map)
+- **Expo Go Limitations**: Push notifications require local-only implementation, WebSocket for real-time updates
+- **EAS Build**: Use cloud build if Java/Android Studio not installed - requires Expo account
+
+See [README.md](README.md) for detailed setup and [MOBILE_INTEGRATION.md](MOBILE_INTEGRATION.md) for mobile-specific troubleshooting.
