@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(xargs cat:*)",
+      "Bash(git -C /c/Users/fuaty/.gemini/antigravity/scratch/ParkVision log --oneline --all)",
+      "Bash(curl:*)",
+      "Bash(python -m json.tool:*)"
+    ]
+  }
+}
